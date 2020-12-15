@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon.png">
+  <link rel="mask-icon" href="/img/favicon.png" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"miqt.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="背景策略下发是发生在上传的时候,由服务端返回策略信息给应用端供下一次使用.具体消息状态为 Code &#x3D; 500 的时候.   目前由于上传是单进程进行的,而返回结果是也是由这个进程处理,并且消费的,这就造成了一个问题,A进程传完了保存好了策略信息,下次如果还是它上传那没问题,但如果下次换为B进程传了,则这里B进程的策略信息可能是还没来得及同步的.而下一次检查上传是5秒以后,因此需要在5秒下次到来上">
+<meta property="og:type" content="website">
+<meta property="og:title" content="miqt&#39;s blog">
+<meta property="og:url" content="https://miqt.github.io/egblog/%E7%AD%96%E7%95%A5%E5%90%8C%E6%AD%A5%E9%97%AE%E9%A2%98%E8%AE%A8%E8%AE%BA%E4%B8%8E%E4%BF%AE%E6%94%B9%E6%96%B9%E5%BC%8F%E9%80%BB%E8%BE%91.html">
+<meta property="og:site_name" content="miqt&#39;s blog">
+<meta property="og:description" content="背景策略下发是发生在上传的时候,由服务端返回策略信息给应用端供下一次使用.具体消息状态为 Code &#x3D; 500 的时候.   目前由于上传是单进程进行的,而返回结果是也是由这个进程处理,并且消费的,这就造成了一个问题,A进程传完了保存好了策略信息,下次如果还是它上传那没问题,但如果下次换为B进程传了,则这里B进程的策略信息可能是还没来得及同步的.而下一次检查上传是5秒以后,因此需要在5秒下次到来上">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://miqt.github.io/egblog/%E7%AD%96%E7%95%A5%E5%90%8C%E6%AD%A5.png">
+<meta property="article:published_time" content="2020-12-15T11:51:02.509Z">
+<meta property="article:modified_time" content="2020-12-15T11:51:02.509Z">
+<meta property="article:author" content="miqt">
+<meta property="article:tag" content="123123">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://miqt.github.io/egblog/%E7%AD%96%E7%95%A5%E5%90%8C%E6%AD%A5.png">
+
+<link rel="canonical" href="https://miqt.github.io/egblog/%E7%AD%96%E7%95%A5%E5%90%8C%E6%AD%A5%E9%97%AE%E9%A2%98%E8%AE%A8%E8%AE%BA%E4%B8%8E%E4%BF%AE%E6%94%B9%E6%96%B9%E5%BC%8F%E9%80%BB%E8%BE%91">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : false,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | miqt's blog
+</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">miqt's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">请保持谦逊｜你会走的更远</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/miqt" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+  
+  
+
+          <div class="content page posts-expand">
+            
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN">
+      <header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">
+</h1>
+
+<div class="post-meta">
+  
+
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>策略下发是发生在上传的时候,由服务端返回策略信息给应用端供下一次使用.具体消息状态为 Code = 500 的时候.  </p>
+<p>目前由于上传是单进程进行的,而返回结果是也是由这个进程处理,并且消费的,这就造成了一个问题,A进程传完了保存好了策略信息,下次如果还是它上传那没问题,但如果下次换为B进程传了,则这里B进程的策略信息可能是还没来得及同步的.而下一次检查上传是5秒以后,因此需要在5秒下次到来上传之前同步完成(实际上这个五秒是最大值,因为多进程每个都在跑5秒,不确定别的进程下次跑到上传距离本次策略下发是不是5秒,0 - 5 秒之间都是有可能的,策略同步的必要性也有这个原因).</p>
+<h2 id="目前的实现方式"><a href="#目前的实现方式" class="headerlink" title="目前的实现方式"></a>目前的实现方式</h2><p>目前采用的实现方式是,由处理策略的进程发广播出来,带上进程名和策略信息json,别的进程收到之后再次同步下信息.具体的逻辑如下图所示.</p>
+<p><img src="./%E7%AD%96%E7%95%A5%E5%90%8C%E6%AD%A5.png" alt="同步逻辑"></p>
+<p><strong>要点:</strong></p>
+<ol>
+<li>收广播先判断是不是处理策略的进程,如果是,返回.</li>
+<li>需要同步的进程对于热修复文件不需要处理了.</li>
+<li>调试设备和非调试设备处理是不同的.</li>
+</ol>
+<h2 id="缺陷分析和以后优化方向"><a href="#缺陷分析和以后优化方向" class="headerlink" title="缺陷分析和以后优化方向"></a>缺陷分析和以后优化方向</h2><h3 id="缺陷分析"><a href="#缺陷分析" class="headerlink" title="缺陷分析"></a>缺陷分析</h3><ul>
+<li>使用广播修改会改善这个问题,但仍然无法毫秒级同步,需要处理过程</li>
+<li>这里的Sp同步的时候实际上每个进程又写了一次,也就是同样的数,写了N次(N=进程数)</li>
+</ul>
+<h3 id="优化方向"><a href="#优化方向" class="headerlink" title="优化方向"></a>优化方向</h3><p>这个问题实际上也是Sp多进程不同步的问题,如果解决了Sp多进程之间的同步,这个问题也就不存在了.</p>
+<h3 id="测试计划"><a href="#测试计划" class="headerlink" title="测试计划"></a>测试计划</h3><p>测试case:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">runCase15</span><span class="params">(<span class="keyword">final</span> Context context)</span> </span>&#123;</span><br><span class="line">    EL.i(<span class="string">&quot;----测试策略同步的情况-------&quot;</span>);</span><br><span class="line">    SPHelper.setStringValue2SP(context, UploadKey.Response.RES_POLICY_VERSION, <span class="string">&quot;0&quot;</span>);</span><br><span class="line">    SPHelper.setLongValue2SP(context, EGContext.LASTQUESTTIME, <span class="number">0</span>);</span><br><span class="line">    PolicyImpl.getInstance(context).clear();</span><br><span class="line">    UploadImpl.getInstance(context).upload();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>打开appdemo  运行多进程case15  logcat 过滤<code>POLICY</code></p>
+<p>测试输出:</p>
+<p>策略处理进程输出:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveRespParams[236]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;开始策略处理 1&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveRespParams[243]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;策略初测测试完毕 2&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveRespParams[255]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;策略为有效策略 3&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveRespParams[266]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;策略为新增策略 4&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.populatePolicyInfo[314]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;解析失败策略完毕  555&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.populatePolicyInfo[322]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;解析间隔时间完毕  666&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.populatePolicyInfo[332]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;动态采集模快解析完毕 777&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveRespParams[271]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;解析热更部分完毕，即将缓存 888&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveNewPolicyToLocal[73]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;保存策略  开始处理  1111&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveNewPolicyToLocal[94]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;保存策略 SP保存完毕 2222&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveNewPolicyToLocal[123]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;调试设备 清除本地缓存文件名  4.1&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveNewPolicyToLocal[130]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;调试设备  清除本地文件  4.2 &#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.saveNewPolicyToLocal[141]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;调试设备  清除完毕  4.3 &#x3D;&#x3D;&#x3D;&#x3D;缓存的版本: 20190907191553</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[759]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 打印对一下数据对不对 </span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[760]  policyVer:20190907191553</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[763]  failCount:2</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[766]  failTryDelay:3001000</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[769]  timerInterval:60000</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[772]  ctrlList:</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[775]  version_HotFix:</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[778]  sign_HotFix:</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[781]  version_HotFix:</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[784]  sign_HotFix:</span><br><span class="line">10089-10656&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[787]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 打印对一下数据对不对结束 </span><br><span class="line">10089-10089&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[638]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 收到广播 1&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10089-10089&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[648]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 验证进程名 2com.device:f|com.device:f</span><br><span class="line">10089-10089&#x2F;com.device:f I&#x2F;sanbo.upload[POLICY]: [com.device:f]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[652]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 收到广播 进程相同 2.1&#x3D;&#x3D;&#x3D;&#x3D;</span><br></pre></td></tr></table></figure>
+
+<p>策略同步进程输出:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[638]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 收到广播 1&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[648]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 验证进程名 2com.device:d|com.device:f</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.populatePolicyInfo[314]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;解析失败策略完毕  555&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.populatePolicyInfo[322]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;解析间隔时间完毕  666&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.populatePolicyInfo[332]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;动态采集模快解析完毕 777&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[670]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 解析PolicyInfo完毕 3&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[676]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 开始更新sp 4&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[700]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略  sp更新完毕 5&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[704]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 热更部分开始  6 &#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[738]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 调试设备 更新sp hotfix  6.2&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.updatePolicyForReceiver[746]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略  调试设备  更新完毕 7&#x3D;&#x3D;&#x3D;&#x3D;缓存的版本: 20190907191553</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[759]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 打印对一下数据对不对 </span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[760]  policyVer:20190907191553</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[763]  failCount:2</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[766]  failTryDelay:3001000</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[769]  timerInterval:60000</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[772]  ctrlList:</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[775]  version_HotFix:</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[778]  sign_HotFix:</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[781]  version_HotFix:</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[784]  sign_HotFix:</span><br><span class="line">10065-10065&#x2F;com.device:d I&#x2F;sanbo.upload[POLICY]: [com.device:d]  堆栈: com.analysys.track.internal.net.PolicyImpl.printInfo[787]  &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;同步策略 打印对一下数据对不对结束 </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      </div>
+      
+      
+      
+    </div>
+    
+
+    
+    
+    
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#目前的实现方式"><span class="nav-number">2.</span> <span class="nav-text">目前的实现方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺陷分析和以后优化方向"><span class="nav-number">3.</span> <span class="nav-text">缺陷分析和以后优化方向</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#缺陷分析"><span class="nav-number">3.1.</span> <span class="nav-text">缺陷分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化方向"><span class="nav-number">3.2.</span> <span class="nav-text">优化方向</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试计划"><span class="nav-number">3.3.</span> <span class="nav-text">测试计划</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="miqt"
+      src="/img/icon.jpg">
+  <p class="site-author-name" itemprop="name">miqt</p>
+  <div class="site-description" itemprop="description">极致而纯粹.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/miqt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;miqt" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:miqingtang@163.com" title="E-Mail → mailto:miqingtang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-miqt"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">miqt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

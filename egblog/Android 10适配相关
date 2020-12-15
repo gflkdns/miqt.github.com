@@ -1,0 +1,75 @@
+
+MAC:
+解释:引用Android文档https://developer.android.google.cn/about/versions/10/privacy#more-privacy-changes
+
+
+"IDFA": "37502d18-7519-4244-8ae0-17f3964a81c6""MO": "46000"
+"MPN": "中国移动"
+"NOC": "46000"
+"NON": "中国移动"
+
+
+oc数据 没有
+
+xxinfo 没有
+
+
+错误:
+
+2019-10-11 18:32:42.055 5470-6245/? E/sanbo: [com.device]  堆栈: com.analysys.track.internal.impl.DeviceImpl.getDeviceId[151]  java.lang.SecurityException: getDeviceId: The user 10053 does not meet the requirements to access device identifiers.
+        at android.os.Parcel.createException(Parcel.java:2071)
+        at android.os.Parcel.readException(Parcel.java:2039)
+        at android.os.Parcel.readException(Parcel.java:1987)
+        at com.android.internal.telephony.ITelephony$Stub$Proxy.getDeviceId(ITelephony.java:10389)
+        at android.telephony.TelephonyManager.getDeviceId(TelephonyManager.java:1619)
+        at com.analysys.track.internal.impl.DeviceImpl.getDeviceId(DeviceImpl.java:141)
+        at com.analysys.track.internal.net.DataPackaging.getDevInfo(DataPackaging.java:56)
+        at com.analysys.track.internal.net.UploadImpl.getInfo(UploadImpl.java:244)
+        at com.analysys.track.internal.net.UploadImpl.doUploadImpl(UploadImpl.java:184)
+        at com.device.impls.MainFunCase$1.run(MainFunCase.java:72)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+        at java.lang.Thread.run(Thread.java:919)
+
+-----
+
+2019-10-11 19:32:13.862 24789-25573/com.device E/sanbo: [com.device]  堆栈: com.analysys.track.internal.net.RequestUtils.httpRequest[100]  java.io.IOException: Cleartext HTTP traffic to urd103.analysys.cn not permitted
+        at com.android.okhttp.HttpHandler$CleartextURLFilter.checkURLPermitted(HttpHandler.java:124)
+        at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:462)
+        at com.android.okhttp.internal.huc.HttpURLConnectionImpl.connect(HttpURLConnectionImpl.java:131)
+        at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getOutputStream(HttpURLConnectionImpl.java:262)
+        at com.analysys.track.internal.net.RequestUtils.httpRequest(RequestUtils.java:74)
+        at com.analysys.track.internal.net.UploadImpl.handleUpload(UploadImpl.java:471)
+        at com.analysys.track.internal.net.UploadImpl.doUploadImpl(UploadImpl.java:207)
+        at com.device.impls.MainFunCase$1.run(MainFunCase.java:72)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+        at java.lang.Thread.run(Thread.java:919)
+
+10 不允许http请求,需要额外配置
+
+-----
+
+获取getSubscriberId 需要下面这个权限,但文档上说,只有特定app才能获取这个权限,第三方获取不到
+
+"android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE"
+
+com.analysys.track.internal.impl.DeviceImpl.getDeviceId[162]  java.lang.SecurityException: getSubscriberId: The user 10053 does not meet the requirements to access device identifiers.
+        at android.os.Parcel.createException(Parcel.java:2071)
+        at android.os.Parcel.readException(Parcel.java:2039)
+        at android.os.Parcel.readException(Parcel.java:1987)
+        at com.android.internal.telephony.IPhoneSubInfo$Stub$Proxy.getSubscriberIdForSubscriber(IPhoneSubInfo.java:984)
+        at android.telephony.TelephonyManager.getSubscriberId(TelephonyManager.java:3627)
+        at android.telephony.TelephonyManager.getSubscriberId(TelephonyManager.java:3591)
+        at com.analysys.track.internal.impl.DeviceImpl.getDeviceId(DeviceImpl.java:153)
+        at com.analysys.track.internal.net.DataPackaging.getDevInfo(DataPackaging.java:56)
+        at com.analysys.track.internal.net.UploadImpl.getInfo(UploadImpl.java:244)
+        at com.analysys.track.internal.net.UploadImpl.doUploadImpl(UploadImpl.java:184)
+        at com.device.impls.MainFunCase$1.run(MainFunCase.java:72)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+        at java.lang.Thread.run(Thread.java:919)
+
+------
+
+10 imei 和 imsi 获取不到

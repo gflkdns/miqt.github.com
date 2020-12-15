@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon.png">
+  <link rel="mask-icon" href="/img/favicon.png" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"miqt.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="免Root实现静默安装和点击任意位置0  前言最近有了个需求：免 root 实现任意位置点击和静默安装。这个做过的小伙伴应该都知道正常情况下是不可能实现的。无障碍只能实现对已知控件的点击，并不能指定坐标。但是确实有人另辟蹊径做出来了，譬如做游戏手柄的飞智，他们是用一个激活器，手机开 usb 调试，然后插在激活器上并授权，飞智游戏厅就被「激活」了，然后可以实现任意位置点击。如果不了解的可以去他们官网">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android免root运行adb高级权限命令，例如修改手机设置等（转）">
+<meta property="og:url" content="https://miqt.github.io/2020/06/02/%E9%AB%98%E7%BA%A7%E6%9D%83%E9%99%90%E5%91%BD%E4%BB%A4%EF%BC%8C%E4%BE%8B%E5%A6%82%E4%BF%AE%E6%94%B9%E6%89%8B%E6%9C%BA%E8%AE%BE%E7%BD%AE%E7%AD%89%EF%BC%88%E8%BD%AC%EF%BC%89/index.html">
+<meta property="og:site_name" content="miqt&#39;s blog">
+<meta property="og:description" content="免Root实现静默安装和点击任意位置0  前言最近有了个需求：免 root 实现任意位置点击和静默安装。这个做过的小伙伴应该都知道正常情况下是不可能实现的。无障碍只能实现对已知控件的点击，并不能指定坐标。但是确实有人另辟蹊径做出来了，譬如做游戏手柄的飞智，他们是用一个激活器，手机开 usb 调试，然后插在激活器上并授权，飞智游戏厅就被「激活」了，然后可以实现任意位置点击。如果不了解的可以去他们官网">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://article.gtf35.top/app_process/as%E9%BB%98%E8%AE%A4%E6%A6%82%E8%A7%88.JPG">
+<meta property="og:image" content="http://article.gtf35.top/app_process/%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%B5%8B%E8%AF%95.JPG">
+<meta property="og:image" content="http://article.gtf35.top/app_process/%E7%BC%96%E8%AF%91%E5%87%BA%E6%9D%A5%E7%9A%84apk.JPG">
+<meta property="og:image" content="http://article.gtf35.top/app_process/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C.JPG">
+<meta property="og:image" content="http://article.gtf35.top/app_process/%E6%9C%80%E5%90%8Edemo%E7%9A%84shell.JPG">
+<meta property="og:image" content="http://article.gtf35.top/app_process/%E6%89%8B%E6%9C%BA%E8%BF%90%E8%A1%8C.gif">
+<meta property="article:published_time" content="2020-06-02T09:44:26.000Z">
+<meta property="article:modified_time" content="2020-12-15T11:51:02.482Z">
+<meta property="article:author" content="miqt">
+<meta property="article:tag" content="123123">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://article.gtf35.top/app_process/as%E9%BB%98%E8%AE%A4%E6%A6%82%E8%A7%88.JPG">
+
+<link rel="canonical" href="https://miqt.github.io/2020/06/02/%E9%AB%98%E7%BA%A7%E6%9D%83%E9%99%90%E5%91%BD%E4%BB%A4%EF%BC%8C%E4%BE%8B%E5%A6%82%E4%BF%AE%E6%94%B9%E6%89%8B%E6%9C%BA%E8%AE%BE%E7%BD%AE%E7%AD%89%EF%BC%88%E8%BD%AC%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>android免root运行adb高级权限命令，例如修改手机设置等（转） | miqt's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">miqt's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">请保持谦逊｜你会走的更远</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/miqt" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2020/06/02/%E9%AB%98%E7%BA%A7%E6%9D%83%E9%99%90%E5%91%BD%E4%BB%A4%EF%BC%8C%E4%BE%8B%E5%A6%82%E4%BF%AE%E6%94%B9%E6%89%8B%E6%9C%BA%E8%AE%BE%E7%BD%AE%E7%AD%89%EF%BC%88%E8%BD%AC%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/icon.jpg">
+      <meta itemprop="name" content="miqt">
+      <meta itemprop="description" content="极致而纯粹.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="miqt's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          android免root运行adb高级权限命令，例如修改手机设置等（转）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-02 17:44:26" itemprop="dateCreated datePublished" datetime="2020-06-02T17:44:26+08:00">2020-06-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-15 19:51:02" itemprop="dateModified" datetime="2020-12-15T19:51:02+08:00">2020-12-15</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="免Root实现静默安装和点击任意位置"><a href="#免Root实现静默安装和点击任意位置" class="headerlink" title="免Root实现静默安装和点击任意位置"></a>免Root实现静默安装和点击任意位置</h1><h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0  前言"></a>0  前言</h2><p>最近有了个需求：免 root 实现任意位置点击和静默安装。这个做过的小伙伴应该都知道正常情况下是不可能实现的。无障碍只能实现对已知控件的点击，并不能指定坐标。但是确实有人另辟蹊径做出来了，譬如做游戏手柄的飞智，他们是用一个激活器，手机开 usb 调试，然后插在激活器上并授权，飞智游戏厅就被「激活」了，然后可以实现任意位置点击。如果不了解的可以去他们官网了解下，在这里不多赘述了。无独有偶，黑域也使用了类似的手段，也可以用电脑的usb调试激活。我们知道，任意位置坐标xy点击是可以在 pc 上通过 shell 命令「input tap x  y」来实现的，也不需要 root 权限。但是在应用内通过「Runtime.getRuntime().exec」执行这个 shell 命令却提示「permission denied」也就是权限不足。但是飞智或者黑域却好像使用了某种魔法，提升了自己的权限，那么问题来了：如何用 usb 调试给 app 提权？</p>
+<h2 id="1-原理揭晓"><a href="#1-原理揭晓" class="headerlink" title="1 原理揭晓"></a>1 原理揭晓</h2><p>「如何用 usb 调试给 app 提权」这个问题乍一看确实没问题，但是知乎有个回答是「先问是不是，再问为什么」我觉得说的很好。我被这个问题给困扰了很久，最后发现我问错了。先放出结论「并不是给 app 提权，而是运行了一个有 shell 权限的新程序」</p>
+<p>刚才的问题先放一边，我来问大家个新问题，怎样让 app 获取 root 权限？这个问题答案已经有不少了，网上一查便可知其实是获取「Runtime.getRuntime().exec」的流，在里面用su提权，然后就可以执行需要 root 权限的 shell 命令，比如挂载 system 读写，访问 data 分区，用 shell 命令静默安装，等等。话说回来，是不是和我们今天的主题有点像，如何使 app 获取 shell 权限？嗯，其实差不多，思路也类似，因为本来 root 啦， shell 啦，根本就不是 Android 应用层的名词呀，他们本来就是 Linux 里的名词，只不过是 Android 框架运行于 Linux 层之上， 我们可以调用 shell 命令，也可以在shell 里调用 su 来使shell 获取 root 权限，来绕过 Android 层做一些被限制的事。然而在 app 里调用 shell 命令，其进程还是 app 的，权限还是受限。所以就不能在 app 里运行 shell 命令，那么问题来了，不在 app 里运行在哪运行？答案是在 pc 上运行。当然不可能是 pc 一直连着手机啦，而是 pc 上在 shell 里运行独立的一个 java 程序，这个程序因为是在 shell 里启动的，所以具有 shell 权限。我们想一下，这个 Java 程序在 shell 里运行，建立本地 socket 服务器，和 app 通信，远程执行 app 下发的代码。因为即使拔掉了数据线，这个 Java 程序也不会停止，只要不重启他就一直活着，执行我们的命令，这不就是看起来 app 有了 shell 权限？现在真相大白，飞智和黑域用 usb 调试激活的那一下，其实是启动那个 Java 程序，飞智是执行模拟按键，黑域是监听系统事件，你想干啥就任你开发了。「注：黑域和飞智由于进程管理的需要，其实是先用 shell 启动一个 so ，然后再用 so 做跳板启动 Java 程序，而且 so 也充当守护进程，当 Java 意外停止可以重新启动，读着有兴趣可以自行研究，在此不多做说明」</p>
+<a id="more"></a>
+
+<h2 id="2-好耶！是-app-process"><a href="#2-好耶！是-app-process" class="headerlink" title="2 好耶！是 app_process"></a>2 好耶！是 app_process</h2><p>那么如何具体用 shell 运行 Java 程序呢？肯定不是「java xxx.jar」啦，Android 能运行的格式是 dex 。没错，就是apk 里那个 dex 。然后我们可以通过「app_process」开启动 Java 。app_process 的参数如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app_process [vm-options] cmd-dir [options] start-class-name [main-options]</span><br></pre></td></tr></table></figure>
+
+<p>这个诡异又可怕的东西是没有 -help 的。我们要么看源码，要么看别人分析好的。本人水平有限，这里选择看别人分析好的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vm-options – VM 选项</span><br><span class="line">cmd-dir –父目录 (/system/bin)</span><br><span class="line">options –运行的参数 :</span><br><span class="line">    –zygote</span><br><span class="line">    –start-system-server</span><br><span class="line">    –application (api&gt;=14)</span><br><span class="line">    –nice-name=nice_proc_name (api&gt;=14)</span><br><span class="line">start-class-name –包含main方法的主类  (com.android.commands.am.Am)</span><br><span class="line">main-options –启动时候传递到main方法中的参数</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-实践"><a href="#3-实践" class="headerlink" title="3 实践"></a>3 实践</h2><p>因为是 dex 我们就直接在 as 里写吧，提取 dex 也方便。新建个空白项目，初始结构是这样：</p>
+<p><img src="http://article.gtf35.top/app_process/as%E9%BB%98%E8%AE%A4%E6%A6%82%E8%A7%88.JPG"></p>
+<p>我们新建个包，存放我们要在 shell 下运行的 Java 代码：</p>
+<p><img src="http://article.gtf35.top/app_process/%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%B5%8B%E8%AF%95.JPG"></p>
+<p>这里我们补全 Main 方法，因为我们这个不是个 Android 程序，只是编译成 dex 的纯 Java 程序，所以我们这个的入口是 Main :</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> shellService;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;我是在 shell 里运行的！！！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们在代码里只是打印一行「我是在 shell 里运行的！！！」，因为这里是纯 Java 所以也用的 println。现在编译 apk：</p>
+<p><img src="http://article.gtf35.top/app_process/%E7%BC%96%E8%AF%91%E5%87%BA%E6%9D%A5%E7%9A%84apk.JPG"></p>
+<p>因为 apk 就是 zip 所以我们直接解压出 apk 文件里的classes.dex，然后执行 ：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb push classes.dex /data/local/tmp</span><br><span class="line">cd /data/local/tmp</span><br><span class="line">app_process -Djava.class.path=/data/local/tmp/classes.dex /system/bin shellService.Main</span><br></pre></td></tr></table></figure>
+
+<p>这时就能看到已经成功运行啦：</p>
+<p><img src="http://article.gtf35.top/app_process/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C.JPG"></p>
+<p>这里因为 utf8 在 Windows shell 里有问题，所以乱码了，但是还是说明我们成功了。</p>
+<p>##4 具有实用性</p>
+<p>只能输出肯定是不行的，不具有实用性。我们之前说过，我们应该建立个本地 socket 服务器来接受命令并执行，这里的「Service」类实现了这个功能，因为如何建立 socket 不是文章的重点，所以大家只要知道这个类内部实现了一个「ServiceGetText」接口，在收到命令之后会把命令内容作为参数回掉 getText 方法，然后我们执行 shell 命令之后，吧结果作为字符串返回即可，具体实现可以看查看源码<a href="https://github.com/gtf35/app_process-shell-use/blob/master/app/src/main/java/shellService/Service.java" target="_blank" rel="noopener">Service</a>。</p>
+<p>我们新建一个「<a href="https://github.com/gtf35/app_process-shell-use/blob/master/app/src/main/java/shellService/ServiceThread.java" target="_blank" rel="noopener">ServiceThread</a>」来运行「Service」服务和执行设立了命令：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> ShellPORT = <span class="number">4521</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;&gt;&gt;&gt;&gt;&gt;&gt;Shell服务端程序被调用&lt;&lt;&lt;&lt;&lt;&lt;&quot;</span>);</span><br><span class="line">        <span class="keyword">new</span> Service(<span class="keyword">new</span> Service.ServiceGetText() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> String <span class="title">getText</span><span class="params">(String text)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (text.startsWith(<span class="string">&quot;###AreYouOK&quot;</span>))&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="string">&quot;###IamOK#&quot;</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">try</span>&#123;</span><br><span class="line">                    ServiceShellUtils.ServiceShellCommandResult sr =  ServiceShellUtils.execCommand(text, <span class="keyword">false</span>);</span><br><span class="line">                    <span class="keyword">if</span> (sr.result == <span class="number">0</span>)&#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="string">&quot;###ShellOK#&quot;</span> + sr.successMsg;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="string">&quot;###ShellError#&quot;</span> + sr.errorMsg;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="string">&quot;###CodeError#&quot;</span> + e.toString();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, ShellPORT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中 <a href="https://github.com/gtf35/app_process-shell-use/blob/master/app/src/main/java/shellService/ServiceShellUtils.java" target="_blank" rel="noopener">ServiceShellUtils</a> 用到了开源项目 ShellUtils 在此感谢。这个类用来执行 shell 命令。</p>
+<p>然后在 Main 中调用这个线程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">        <span class="keyword">new</span> ServiceThread().start();</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样，我们服务端就准备好了，我们来写控制服务端的 app 。我们新建类「SocketClient」用来和服务端进行通信，并在活动里调用他（完整代码请参看<a href="https://github.com/gtf35/app_process-shell-use/blob/master/app/src/main/java/top/gtf35/shellapplicatontest/SocketClient.java" target="_blank" rel="noopener">SocketClient</a>和<a href="https://github.com/gtf35/app_process-shell-use/blob/master/app/src/main/java/top/gtf35/shellapplicatontest/MainActivity.java" target="_blank" rel="noopener">MainActivity</a>）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">runShell</span><span class="params">(<span class="keyword">final</span> String cmd)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (TextUtils.isEmpty(cmd)) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">              <span class="keyword">new</span> SocketClient(cmd, <span class="keyword">new</span> SocketClient.onServiceSend() &#123;</span><br><span class="line">                  <span class="meta">@Override</span></span><br><span class="line">                  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getSend</span><span class="params">(String result)</span> </span>&#123;</span><br><span class="line">                      showTextOnTextView(result);</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后重复 3 小节的操作，运行这个服务端:</p>
+<p><img src="http://article.gtf35.top/app_process/%E6%9C%80%E5%90%8Edemo%E7%9A%84shell.JPG"></p>
+<p>然后安装 apk ，运行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">input text HelloWord</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://article.gtf35.top/app_process/%E6%89%8B%E6%9C%BA%E8%BF%90%E8%A1%8C.gif"></p>
+<p>可以看到，在不 root 的情况下，成功的执行了需要 shell 权限的命令</p>
+<h2 id="5-最可爱的人"><a href="#5-最可爱的人" class="headerlink" title="5 最可爱的人"></a>5 最可爱的人</h2><p>最后，我真的是要由衷的感谢各种技术分析文章和开源项目，真的太感谢了，没有无条件的奉献就没有互联网这么快的进步。</p>
+<p>我对 app_process 利用方法的研究离不开以下项目和前辈的汗水:</p>
+<p><a href="https://github.com/brevent/Brevent" target="_blank" rel="noopener">Brevent</a> 最早利用app_process进程实现无 root 权限使用的开源应用（虽然已经闭源，仍然尊重并感谢 <a href="https://github.com/liudongmiao" target="_blank" rel="noopener">liudongmiao</a>）</p>
+<p><a href="https://github.com/Zane96/Fairy" target="_blank" rel="noopener">Android system log viewer on Android phone without root.</a> 利用app_process进程实现无 root 权限使用的优秀开源应用</p>
+<p><a href="https://blog.csdn.net/u010651541/article/details/53163542" target="_blank" rel="noopener">Android上app_process启动java进程</a> 通俗易懂的教程</p>
+<p><a href="https://haruue.moe/blog/2017/08/30/call-privileged-api-with-app-process/" target="_blank" rel="noopener">使用 app_process 来调用高权限 API</a> 分析的很深刻的教程</p>
+<p>本文的项目可以在<a href="https://github.com/gtf35/app_process-shell-use" target="_blank" rel="noopener">GitHub上获取</a>：<a href="https://github.com/gtf35/app_process-shell-use" target="_blank" rel="noopener">https://github.com/gtf35/app_process-shell-use</a></p>
+<blockquote>
+<p>本文转发自：<a href="https://github.com/gtf35/app_process-shell-use" target="_blank" rel="noopener">https://github.com/gtf35/app_process-shell-use</a><br>如果转发地址失效了或访问404，可访问我fork的<br><a href="https://github.com/miqt/app_process-shell-use" target="_blank" rel="noopener">https://github.com/miqt/app_process-shell-use</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>miqt
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://miqt.github.io/2020/06/02/%E9%AB%98%E7%BA%A7%E6%9D%83%E9%99%90%E5%91%BD%E4%BB%A4%EF%BC%8C%E4%BE%8B%E5%A6%82%E4%BF%AE%E6%94%B9%E6%89%8B%E6%9C%BA%E8%AE%BE%E7%BD%AE%E7%AD%89%EF%BC%88%E8%BD%AC%EF%BC%89/" title="android免root运行adb高级权限命令，例如修改手机设置等（转）">https://miqt.github.io/2020/06/02/高级权限命令，例如修改手机设置等（转）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/17/%E8%B1%81%E5%85%8D%E6%89%80%E6%9C%89hide%E7%81%B0%E5%90%8D%E5%8D%95%E8%B0%83%E7%94%A8%E8%AD%A6%E5%91%8A%EF%BC%8C%E4%B8%8D%E5%BC%B9%E7%AA%97%EF%BC%8Clogcat%E4%B8%8D%E6%8F%90%E7%A4%BA/" rel="prev" title="Android 豁免所有hide灰名单调用警告，不弹窗，logcat不提示">
+      <i class="fa fa-chevron-left"></i> Android 豁免所有hide灰名单调用警告，不弹窗，logcat不提示
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/10/%E8%BF%9E%E5%90%8C%E5%B5%8C%E5%A5%97%E4%BE%9D%E8%B5%96%E6%89%93%E6%88%90%E4%B8%80%E4%B8%AAaar/" rel="next" title="Android连同嵌套依赖打成一个aar">
+      Android连同嵌套依赖打成一个aar <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#免Root实现静默安装和点击任意位置"><span class="nav-number">1.</span> <span class="nav-text">免Root实现静默安装和点击任意位置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-前言"><span class="nav-number">1.1.</span> <span class="nav-text">0  前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-原理揭晓"><span class="nav-number">1.2.</span> <span class="nav-text">1 原理揭晓</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-好耶！是-app-process"><span class="nav-number">1.3.</span> <span class="nav-text">2 好耶！是 app_process</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-实践"><span class="nav-number">1.4.</span> <span class="nav-text">3 实践</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-最可爱的人"><span class="nav-number">1.5.</span> <span class="nav-text">5 最可爱的人</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="miqt"
+      src="/img/icon.jpg">
+  <p class="site-author-name" itemprop="name">miqt</p>
+  <div class="site-description" itemprop="description">极致而纯粹.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/miqt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;miqt" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:miqingtang@163.com" title="E-Mail → mailto:miqingtang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-miqt"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">miqt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

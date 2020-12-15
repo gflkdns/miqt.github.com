@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon.png">
+  <link rel="mask-icon" href="/img/favicon.png" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"miqt.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="新年快到了,工作了一年你,躺在床上,退下一身的疲怠,是否也曾向往去到一个新的城市工作和生活呢?     那中国除了公认的北上广深工作机会最多以外,还有那些城市也相对不错呢?   这时候我们可能会打开招聘网站开始选择城市然后来了解这个城市的职位情况.   那么一直秉持着人生苦短,我学python的我们,为什么不能用python来写一个分析2018全国各个城市的职位数排名的爬虫脚本呢?     这么一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用python分析2018智联招聘全国各个城市的职位数排名">
+<meta property="og:url" content="https://miqt.github.io/2018/01/16/%E5%88%A9%E7%94%A8python%E5%88%86%E6%9E%902018%E6%99%BA%E8%81%94%E6%8B%9B%E8%81%98%E5%85%A8%E5%9B%BD%E5%90%84%E4%B8%AA%E5%9F%8E%E5%B8%82%E8%A1%8C%E4%B8%9A%E8%81%8C%E4%BD%8D%E6%95%B0%E6%8E%92%E5%90%8D/index.html">
+<meta property="og:site_name" content="miqt&#39;s blog">
+<meta property="og:description" content="新年快到了,工作了一年你,躺在床上,退下一身的疲怠,是否也曾向往去到一个新的城市工作和生活呢?     那中国除了公认的北上广深工作机会最多以外,还有那些城市也相对不错呢?   这时候我们可能会打开招聘网站开始选择城市然后来了解这个城市的职位情况.   那么一直秉持着人生苦短,我学python的我们,为什么不能用python来写一个分析2018全国各个城市的职位数排名的爬虫脚本呢?     这么一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/python_zhilian_city.png">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/python_zhilian_strong.png">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/python_zhilian_num.png">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/python_zhilian_em.png">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/python_zhilian_run.png">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/python_zhilian.png">
+<meta property="og:image" content="http://img0.ph.126.net/4NlgC7AwDM3M6BjSc3PrjQ==/6632434458656127402.png">
+<meta property="og:image" content="http://img2.ph.126.net/YsfOZ-IxEyQkbrnOFkWSKQ==/1276770494379233603.png">
+<meta property="og:image" content="http://img2.ph.126.net/8uIJLvGdrjZlo1T8mrixEw==/1276489019402508641.png">
+<meta property="og:image" content="http://img0.ph.126.net/-i-lD0vh35ejcVJZhBNmBw==/6632501528865399315.png">
+<meta property="article:published_time" content="2018-01-16T09:27:31.000Z">
+<meta property="article:modified_time" content="2020-12-15T11:51:02.480Z">
+<meta property="article:author" content="miqt">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://miqt.github.io/blogimgs/python_zhilian_city.png">
+
+<link rel="canonical" href="https://miqt.github.io/2018/01/16/%E5%88%A9%E7%94%A8python%E5%88%86%E6%9E%902018%E6%99%BA%E8%81%94%E6%8B%9B%E8%81%98%E5%85%A8%E5%9B%BD%E5%90%84%E4%B8%AA%E5%9F%8E%E5%B8%82%E8%A1%8C%E4%B8%9A%E8%81%8C%E4%BD%8D%E6%95%B0%E6%8E%92%E5%90%8D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>利用python分析2018智联招聘全国各个城市的职位数排名 | miqt's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">miqt's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">请保持谦逊｜你会走的更远</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/miqt" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2018/01/16/%E5%88%A9%E7%94%A8python%E5%88%86%E6%9E%902018%E6%99%BA%E8%81%94%E6%8B%9B%E8%81%98%E5%85%A8%E5%9B%BD%E5%90%84%E4%B8%AA%E5%9F%8E%E5%B8%82%E8%A1%8C%E4%B8%9A%E8%81%8C%E4%BD%8D%E6%95%B0%E6%8E%92%E5%90%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/icon.jpg">
+      <meta itemprop="name" content="miqt">
+      <meta itemprop="description" content="极致而纯粹.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="miqt's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用python分析2018智联招聘全国各个城市的职位数排名
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-01-16 17:27:31" itemprop="dateCreated datePublished" datetime="2018-01-16T17:27:31+08:00">2018-01-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-15 19:51:02" itemprop="dateModified" datetime="2020-12-15T19:51:02+08:00">2020-12-15</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>新年快到了,工作了一年你,躺在床上,退下一身的疲怠,是否也曾向往去到一个新的城市工作和生活呢?    </p>
+<p>那中国除了公认的北上广深工作机会最多以外,还有那些城市也相对不错呢?  </p>
+<p>这时候我们可能会打开招聘网站开始选择城市然后来了解这个城市的职位情况.  </p>
+<p>那么一直秉持着人生苦短,我学python的我们,为什么不能用python来写一个分析2018全国各个城市的职位数排名的爬虫脚本呢?    </p>
+<p>这么一想十分可行啊,我们只需要找到一个目标招聘平台,然后通过用代码get到它的html正文,通过BeautifulSoup分析html来得到我们想要的数据,然后用matplotlib画出图表就可以了. <strong>(完整代码见本文末尾.)</strong>    </p>
+<a id="more"></a>
+
+<p>于是立马动手,首先,既然我们是要分析全国范围内的所有城市的职位数,那么我们肯定首先要把所有的城市先列出来.然而这里想必地理学的再好的同学也不可能能把全国范围内所有的城市都能背下来吧,所以这一步,我们也是用python来爬取到全国范围内所有的城市名称.   </p>
+<h3 id="1-爬取全国范围内所有的城市列表"><a href="#1-爬取全国范围内所有的城市列表" class="headerlink" title="1.爬取全国范围内所有的城市列表"></a>1.爬取全国范围内所有的城市列表</h3><p>通过一番查找,终于找到了智联上的这个页面.<a href="http://www.zhaopin.com/citymap.html" target="_blank" rel="noopener">http://www.zhaopin.com/citymap.html</a><br><img src="http://miqt.github.io/blogimgs/python_zhilian_city.png" alt="城市"></p>
+<p>乍一看好像所有的城市名都是加粗的,右键查看一下源代码,果然,所有的城市名都被加上了<code>&lt;strong&gt;</code>标签,类似于这样<br><img src="http://miqt.github.io/blogimgs/python_zhilian_strong.png" alt="标签"></p>
+<p>那就简单了,我们直接获取该网页所有<code>&lt;strong&gt;</code>标签里面的内容,就是标签名了.代码:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">def getCitys(citys):</span><br><span class="line">    urlPath &#x3D; &quot;http:&#x2F;&#x2F;www.zhaopin.com&#x2F;citymap.html&quot;</span><br><span class="line">    print(&quot;开始爬取所有城市：&quot;)</span><br><span class="line">    r &#x3D; requests.get(urlPath)</span><br><span class="line">    if r.ok:</span><br><span class="line">        r.raise_for_status()</span><br><span class="line">        r.encoding &#x3D; &#39;utf-8&#39;</span><br><span class="line">        data &#x3D; r.text</span><br><span class="line">        print(&quot;目标url：&quot;, urlPath)</span><br><span class="line">        soup &#x3D; BeautifulSoup(data, &#39;html.parser&#39;)</span><br><span class="line">        a &#x3D; soup.find_all(&#39;strong&#39;)</span><br><span class="line">        for i in a:</span><br><span class="line">            try:</span><br><span class="line">                citys.append(i.contents[0])</span><br><span class="line">            except:</span><br><span class="line">                continue</span><br><span class="line">    else:</span><br><span class="line">        print(&quot;城市获取失败！&quot;)</span><br></pre></td></tr></table></figure>
+<p>这样我们就获取到了所有的城市名,下一步我们就是要通过遍历这些城市名来查询某一个职业的职位数了.</p>
+<h3 id="2-遍历城市名-爬取对应城市的职位数"><a href="#2-遍历城市名-爬取对应城市的职位数" class="headerlink" title="2.遍历城市名,爬取对应城市的职位数."></a>2.遍历城市名,爬取对应城市的职位数.</h3><p>这时候我们先打开智联的<a href="http://sou.zhaopin.com/jobs/searchresult.ashx" target="_blank" rel="noopener"><strong>搜工作</strong></a>页面,输入职位名”android”,地址选择”烟台”,然后点击搜工作,这时候注意到,浏览器的地址栏变成了:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;sou.zhaopin.com&#x2F;jobs&#x2F;searchresult.ashx?jl&#x3D;烟台&amp;kw&#x3D;android&amp;p&#x3D;1&amp;isadv&#x3D;0</span><br></pre></td></tr></table></figure>
+<p>原来,智联的<strong>找工作</strong>这个按钮是执行了一个get请求而已,其中<code>jl=和&amp;kw=</code>即分别代表要查找的城市和职位关键字,这时候先不要着急写代码,我们先来像上面说的一样来分析一下这个页面.<br>首先第一眼直接就找到了这样的字眼  </p>
+<p><img src="http://miqt.github.io/blogimgs/python_zhilian_num.png"></p>
+<p>上面赫然显示着共84个职位满足条件,一切总是那么完美,不需要多余的任何操作,仿佛传到桥头自然直一样,这不正是我们想要找的职位数吗.然后右键选择查看源代码.恩,不得不说相当完美!</p>
+<p><img src="http://miqt.github.io/blogimgs/python_zhilian_em.png"></p>
+<p>但这次数据格式好像比较复杂一点,我们如果仅仅简单用<code>&lt;em&gt;84&lt;/em&gt;</code>标签包裹的内容来获取职位数的话好像已经行不通了,因为该网页很多的地方也使用了<code>&lt;em&gt;</code>标签,那怎么办呢,这时候我们只能使用正则表达式来匹配了.</p>
+<p>修修改改,最终的正则表达式是这样的:<code>(?!共&lt;em&gt;)[0-9]+(?=&lt;/em&gt;个职位满足条件)</code>,其中的?!和?=则是让其所在的括号内的内容不放入匹配缓冲区里.</p>
+<p>好,接下来我们就可以结合以上的内容来写代码了.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">import re</span><br><span class="line">import requests</span><br><span class="line"></span><br><span class="line">zhilianUrl &#x3D; &quot;http:&#x2F;&#x2F;sou.zhaopin.com&#x2F;jobs&#x2F;searchresult.ashx?jl&#x3D;烟台&amp;kw&#x3D;android&amp;p&#x3D;1&amp;isadv&#x3D;0&quot;</span><br><span class="line">r &#x3D; requests.get(zhilianUrl)</span><br><span class="line">if r.ok:</span><br><span class="line">    r.raise_for_status()</span><br><span class="line">    r.encoding &#x3D; &#39;utf-8&#39;</span><br><span class="line">    rr &#x3D; r&#39;(?!共&lt;em&gt;)[0-9]+(?&#x3D;&lt;&#x2F;em&gt;个职位满足条件)&#39;</span><br><span class="line">    a &#x3D; re.findall(rr, r.text, 0)</span><br><span class="line">    print(a)</span><br><span class="line">else:</span><br><span class="line">    print(&quot;职位数获取失败！&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>写完赶紧兴冲冲的run一下,…然而…</p>
+<p><img src="http://miqt.github.io/blogimgs/python_zhilian_run.png" alt="程序卡住了"></p>
+<p>结果是运行没有报错也没有任何输出,左边的红色方块显示程序还在运行中,是的,它卡住了,停止运行再重新start还是会卡主,检查一下程序也没问题啊,what?辛辛苦苦才到达了这步救过竟然卡住了?这个时候我们不要着急,身为一个整天跟各种BUG打交道的程序员,一定要镇定,努力分析问题可能的原因,然后解决问题.  </p>
+<p>继续回到我们的这个问题上,排除我们程序本身的问题,会不会是对方的网站早知道我们会写python爬取,故意给我们加了限制呢?于是我们给我们的这次访问加上一个请求头试试,让我们的这次请求伪装成来自浏览器的访问.  </p>
+<p>ok,改代码,给这次get请求加上一个请求头:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">import re</span><br><span class="line">import requests</span><br><span class="line"></span><br><span class="line">headers &#x3D; &#123;</span><br><span class="line">    &#39;Host&#39;: &#39;blog.csdn.net&#39;,</span><br><span class="line">    &#39;User-Agent&#39;: &#39;Mozilla&#x2F;5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko&#x2F;20100101 Firefox&#x2F;43.0&#39;,</span><br><span class="line">    &#39;Accept&#39;: &#39;text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8&#39;,</span><br><span class="line">    &#39;Accept-Language&#39;: &#39;zh-CN,zh;q&#x3D;0.8,en-US;q&#x3D;0.5,en;q&#x3D;0.3&#39;,</span><br><span class="line">    &#39;Accept-Encoding&#39;: &#39;gzip, deflate&#39;,</span><br><span class="line">    &#39;Referer&#39;: &#39;http:&#x2F;&#x2F;www.baidu.com&#39;,</span><br><span class="line">    &#39;Connection&#39;: &#39;keep-alive&#39;,</span><br><span class="line">    &#39;Cache-Control&#39;: &#39;max-age&#x3D;0&#39;,</span><br><span class="line">&#125;</span><br><span class="line">zhilianUrl &#x3D; &quot;http:&#x2F;&#x2F;sou.zhaopin.com&#x2F;jobs&#x2F;searchresult.ashx?jl&#x3D;烟台&amp;kw&#x3D;android&amp;p&#x3D;1&amp;isadv&#x3D;0&quot;</span><br><span class="line">r &#x3D; requests.get(zhilianUrl, headers&#x3D;headers)</span><br><span class="line">if r.ok:</span><br><span class="line">    r.raise_for_status()</span><br><span class="line">    r.encoding &#x3D; &#39;utf-8&#39;</span><br><span class="line">    rr &#x3D; r&#39;(?!共&lt;em&gt;)[0-9]+(?&#x3D;&lt;&#x2F;em&gt;个职位满足条件)&#39;</span><br><span class="line">    a &#x3D; re.findall(rr, r.text, 0)</span><br><span class="line">    print(a)</span><br><span class="line">else:</span><br><span class="line">    print(&quot;城市获取失败！&quot;)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>运行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">F:\PythonPoj\PythonLearn\venv\Scripts\python.exe F:&#x2F;PythonPoj&#x2F;PythonLearn&#x2F;test.py</span><br><span class="line">[&#39;84&#39;]</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>果然这下就没问题了,程序瞬间就成功获取到了职位数为 84<br>继续改动一下程序,遍历所有的城市列表,并根据<code>key=城市名,value=职位数</code>的格式将所有的城市职位数都获取来存到一个字典(Dictionary)里.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">def getData(citys, data):</span><br><span class="line">    for city in citys:</span><br><span class="line">        headers &#x3D; &#123;</span><br><span class="line">            &#39;Host&#39;: &#39;blog.csdn.net&#39;,</span><br><span class="line">            &#39;User-Agent&#39;: &#39;Mozilla&#x2F;5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko&#x2F;20100101 Firefox&#x2F;43.0&#39;,</span><br><span class="line">            &#39;Accept&#39;: &#39;text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,*&#x2F;*;q&#x3D;0.8&#39;,</span><br><span class="line">            &#39;Accept-Language&#39;: &#39;zh-CN,zh;q&#x3D;0.8,en-US;q&#x3D;0.5,en;q&#x3D;0.3&#39;,</span><br><span class="line">            &#39;Accept-Encoding&#39;: &#39;gzip, deflate&#39;,</span><br><span class="line">            &#39;Referer&#39;: &#39;http:&#x2F;&#x2F;www.baidu.com&#39;,</span><br><span class="line">            &#39;Connection&#39;: &#39;keep-alive&#39;,</span><br><span class="line">            &#39;Cache-Control&#39;: &#39;max-age&#x3D;0&#39;,</span><br><span class="line">        &#125;</span><br><span class="line">        zhilianUrl &#x3D; &quot;http:&#x2F;&#x2F;sou.zhaopin.com&#x2F;jobs&#x2F;searchresult.ashx?jl&#x3D;&quot; + city + &quot;&amp;kw&#x3D;&quot; + zhiwei + &quot;&amp;p&#x3D;1&amp;isadv&#x3D;0&quot;</span><br><span class="line">        r &#x3D; requests.get(zhilianUrl, headers&#x3D;headers)</span><br><span class="line">        if r.ok:</span><br><span class="line">            r.raise_for_status()</span><br><span class="line">            r.encoding &#x3D; &#39;utf-8&#39;</span><br><span class="line">            rr &#x3D; r&#39;(?!共&lt;em&gt;)[0-9]+(?&#x3D;&lt;&#x2F;em&gt;个职位满足条件)&#39;</span><br><span class="line">            a &#x3D; re.findall(rr, r.text, 0)</span><br><span class="line"></span><br><span class="line">            if int(a[0]) &gt;&#x3D; 50 and hasCity(r):</span><br><span class="line">                print(city, zhiwei, a[0])</span><br><span class="line">                data[city] &#x3D; int(a[0])</span><br><span class="line">        else:</span><br><span class="line">            print(&quot;城市获取失败！&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>这样我们就得到了这样的数据:<br><code>&#123;&#39;北京&#39;: 4205, &#39;上海&#39;: 2702, &#39;广州&#39;: 1442, &#39;深圳&#39;: 1872, &#39;天津&#39;: 536 ...&#125;</code></p>
+<h3 id="使用matplotlib根据数据画出图表"><a href="#使用matplotlib根据数据画出图表" class="headerlink" title="使用matplotlib根据数据画出图表"></a>使用matplotlib根据数据画出图表</h3><p>通过上面我们获取完了数据之后,直接用matplotlib库画出图表来就可以直观的看到各个城市的职位数情况了.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def draw(keys, values):</span><br><span class="line">    plt.rcParams[&#39;font.sans-serif&#39;] &#x3D; [&#39;SimHei&#39;]  # 用来正常显示中文标签</span><br><span class="line">    plt.rcParams[&#39;axes.unicode_minus&#39;] &#x3D; False  # 用来正常显示负号</span><br><span class="line">    time &#x3D; i &#x3D; datetime.datetime.now()</span><br><span class="line">    plt.title(str(time.year) + &quot;&#x2F;&quot; + str(time.month) + &quot;&#x2F;&quot; + str(time.day) + zhiwei + &quot;职位数分布图&quot;)</span><br><span class="line">    plt.bar(keys, values, label&#x3D;&quot;职位数&quot;)</span><br><span class="line">    plt.legend()</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="结果展示"><a href="#结果展示" class="headerlink" title="结果展示"></a>结果展示</h3><p>程序运行:</p>
+<p><img src="http://miqt.github.io/blogimgs/python_zhilian.png" alt="爬取中"></p>
+<p>运行结果:</p>
+<p><img src="http://img0.ph.126.net/4NlgC7AwDM3M6BjSc3PrjQ==/6632434458656127402.png" alt="android爬取结果"></p>
+<p>还可以修改一下脚本中的职位名,查找其他职业:</p>
+<p><img src="http://img2.ph.126.net/YsfOZ-IxEyQkbrnOFkWSKQ==/1276770494379233603.png" alt="python爬取结果"></p>
+<p><img src="http://img2.ph.126.net/8uIJLvGdrjZlo1T8mrixEw==/1276489019402508641.png" alt="PHP爬取结果"></p>
+<p><img src="http://img0.ph.126.net/-i-lD0vh35ejcVJZhBNmBw==/6632501528865399315.png" alt="会计爬取结果"></p>
+<blockquote>
+<p>本文出自: <a href="http://imaster.top/" target="_blank" rel="noopener">http://imaster.top</a><br>完整代码<a href="https://github.com/miqt/PythonLearn/blob/b3d33166303c3ec19eae3eedf13810af0234c9d9/ZhiLian.py" target="_blank" rel="noopener">点此获取</a><br>本文为作者原创,转载请注明出处.  </p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>miqt
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://miqt.github.io/2018/01/16/%E5%88%A9%E7%94%A8python%E5%88%86%E6%9E%902018%E6%99%BA%E8%81%94%E6%8B%9B%E8%81%98%E5%85%A8%E5%9B%BD%E5%90%84%E4%B8%AA%E5%9F%8E%E5%B8%82%E8%A1%8C%E4%B8%9A%E8%81%8C%E4%BD%8D%E6%95%B0%E6%8E%92%E5%90%8D/" title="利用python分析2018智联招聘全国各个城市的职位数排名">https://miqt.github.io/2018/01/16/利用python分析2018智联招聘全国各个城市行业职位数排名/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"><i class="fa fa-tag"></i> python</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/29/android-O-app-shortcuts/" rel="prev" title="拥抱Android O，Android固定快捷方式App Shortcuts">
+      <i class="fa fa-chevron-left"></i> 拥抱Android O，Android固定快捷方式App Shortcuts
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/01/25/coding_list/" rel="next" title="编程碎碎念">
+      编程碎碎念 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-爬取全国范围内所有的城市列表"><span class="nav-number">1.</span> <span class="nav-text">1.爬取全国范围内所有的城市列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-遍历城市名-爬取对应城市的职位数"><span class="nav-number">2.</span> <span class="nav-text">2.遍历城市名,爬取对应城市的职位数.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用matplotlib根据数据画出图表"><span class="nav-number">3.</span> <span class="nav-text">使用matplotlib根据数据画出图表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结果展示"><span class="nav-number">4.</span> <span class="nav-text">结果展示</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="miqt"
+      src="/img/icon.jpg">
+  <p class="site-author-name" itemprop="name">miqt</p>
+  <div class="site-description" itemprop="description">极致而纯粹.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/miqt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;miqt" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:miqingtang@163.com" title="E-Mail → mailto:miqingtang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-miqt"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">miqt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

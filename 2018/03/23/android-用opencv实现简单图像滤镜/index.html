@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon.png">
+  <link rel="mask-icon" href="/img/favicon.png" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"miqt.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="opencv的线性滤波可以为图像添加一些效果,比如模糊,降噪,锐化,腐蚀与膨胀等,当然我们也可以自己来定义核来实现一些特殊的效果.   核是什么?那么上面提到的核是什么呢?   核可以看做是沿着图像像素移动的一个窗口,它遍历图片的每个像素,并且将计算后的结果输出到该像素,通过这样的一个图可以更直观的理解这个概念. 核说白了就是一个固定大小的数值数组。该数组带有一个 锚点 ，一般位于数组中央. 它类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android-opencv之线性滤波.实现简单图像滤镜">
+<meta property="og:url" content="https://miqt.github.io/2018/03/23/android-%E7%94%A8opencv%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E5%9B%BE%E5%83%8F%E6%BB%A4%E9%95%9C/index.html">
+<meta property="og:site_name" content="miqt&#39;s blog">
+<meta property="og:description" content="opencv的线性滤波可以为图像添加一些效果,比如模糊,降噪,锐化,腐蚀与膨胀等,当然我们也可以自己来定义核来实现一些特殊的效果.   核是什么?那么上面提到的核是什么呢?   核可以看做是沿着图像像素移动的一个窗口,它遍历图片的每个像素,并且将计算后的结果输出到该像素,通过这样的一个图可以更直观的理解这个概念. 核说白了就是一个固定大小的数值数组。该数组带有一个 锚点 ，一般位于数组中央. 它类">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.opencv.org.cn/opencvdoc/2.3.2/html/_images/filter_2d_tutorial_kernel_theory.png">
+<meta property="og:image" content="http://www.opencv.org.cn/opencvdoc/2.3.2/html/_images/math/3ad6d7139f24a1a8b5ddd380ace0008c46799f95.png">
+<meta property="og:image" content="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_fs.png">
+<meta property="og:image" content="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_zdy_r.png">
+<meta property="og:image" content="http://miqt.github.io/blogimgs/device-2018-03-27-155048.png">
+<meta property="og:image" content="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_fs.png">
+<meta property="og:image" content="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_fs_r.png">
+<meta property="article:published_time" content="2018-03-23T02:04:33.000Z">
+<meta property="article:modified_time" content="2020-12-15T11:51:02.476Z">
+<meta property="article:author" content="miqt">
+<meta property="article:tag" content="android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.opencv.org.cn/opencvdoc/2.3.2/html/_images/filter_2d_tutorial_kernel_theory.png">
+
+<link rel="canonical" href="https://miqt.github.io/2018/03/23/android-%E7%94%A8opencv%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E5%9B%BE%E5%83%8F%E6%BB%A4%E9%95%9C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>android-opencv之线性滤波.实现简单图像滤镜 | miqt's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">miqt's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">请保持谦逊｜你会走的更远</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/miqt" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2018/03/23/android-%E7%94%A8opencv%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E5%9B%BE%E5%83%8F%E6%BB%A4%E9%95%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/icon.jpg">
+      <meta itemprop="name" content="miqt">
+      <meta itemprop="description" content="极致而纯粹.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="miqt's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          android-opencv之线性滤波.实现简单图像滤镜
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-23 10:04:33" itemprop="dateCreated datePublished" datetime="2018-03-23T10:04:33+08:00">2018-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-15 19:51:02" itemprop="dateModified" datetime="2020-12-15T19:51:02+08:00">2020-12-15</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>opencv的线性滤波可以为图像添加一些效果,比如模糊,降噪,锐化,腐蚀与膨胀等,当然我们也可以自己来定义<strong>核</strong>来实现一些特殊的效果.  </p>
+<h2 id="核是什么"><a href="#核是什么" class="headerlink" title="核是什么?"></a>核是什么?</h2><p>那么上面提到的核是什么呢?  </p>
+<p>核可以看做是沿着图像像素移动的一个窗口,它遍历图片的每个像素,并且将计算后的结果输出到该像素,通过这样的一个图可以更直观的理解这个概念. 核说白了就是一个固定大小的数值数组。该数组带有一个 锚点 ，一般位于数组中央. 它类似于这样 .   </p>
+<p><img src="http://www.opencv.org.cn/opencvdoc/2.3.2/html/_images/filter_2d_tutorial_kernel_theory.png" alt="opencv的核">  </p>
+<a id="more"></a>
+
+<h2 id="如何用核实现卷积？"><a href="#如何用核实现卷积？" class="headerlink" title="如何用核实现卷积？"></a>如何用核实现卷积？</h2><blockquote>
+<p>以下引用自<a href="http://www.opencv.org.cn/opencvdoc/2.3.2/html/doc/tutorials/imgproc/imgtrans/filter_2d/filter_2d.html" target="_blank" rel="noopener">opencv中文教程</a></p>
+</blockquote>
+<p>假如你想得到图像的某个特定位置的卷积值，可用下列方法计算：</p>
+<ol>
+<li>将核的锚点放在该特定位置的像素上，同时，核内的其他值与该像素邻域的各像素重合；</li>
+<li>将核内各值与相应像素值相乘，并将乘积相加；</li>
+<li>将所得结果放到与锚点对应的像素上；</li>
+<li>对图像所有像素重复上述过程。</li>
+</ol>
+<p>用公式表示上述过程如下：  </p>
+<p><img src="http://www.opencv.org.cn/opencvdoc/2.3.2/html/_images/math/3ad6d7139f24a1a8b5ddd380ace0008c46799f95.png" alt="核卷积运算公式"></p>
+<p>说实话,这个运算过程我真没有看懂(如果大家有能看明白的希望能讲一下),但这并不影响我们去使用它,因为幸运的是,OpenCV已经为我们提供了函数 <code>filter2D</code> 来实现了这些运算,我们并不需要自己去实现.  </p>
+<h2 id="在android中实现图像滤波"><a href="#在android中实现图像滤波" class="headerlink" title="在android中实现图像滤波"></a>在android中实现图像滤波</h2><p>上面算是说了关于opencv线性滤波器的一些理论的东西吧,下面我们就来说一说在android平台中,如何利用opencv来实现一个图像滤波器.</p>
+<p>第一步当然就是把opencvsdk配置到我们的项目中来了,并且配置好了之后,我们还要进行load成功才可以使用.这一部分可以参照我的<a href="http://imaster.top/2018/03/23/android-opencv%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89%E5%BA%93%E7%9A%84%E9%9B%86%E6%88%90/" target="_blank" rel="noopener" title="android-opencv机器视觉库的集成部署">上一篇笔记</a></p>
+<p>第二步则是调用opencv的函数,进行图像处理,下面是五种滤镜的效果,及实现代码.</p>
+<h3 id="简单滤镜之自定义核实现自己的线性滤波器"><a href="#简单滤镜之自定义核实现自己的线性滤波器" class="headerlink" title="简单滤镜之自定义核实现自己的线性滤波器"></a>简单滤镜之自定义核实现自己的线性滤波器</h3><p>效果:  </p>
+<p><img src="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_fs.png"><img src="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_zdy_r.png"></p>
+<p>核心代码:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SharpenProcessor</span> <span class="keyword">implements</span> <span class="title">ImgProcessor</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Mat dec;</span><br><span class="line">    <span class="keyword">private</span> Mat src;</span><br><span class="line">    <span class="keyword">private</span> Bitmap bitmap_dec;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Mat kernel;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initProcessor</span><span class="params">(Bitmap bitmap_src)</span> </span>&#123;</span><br><span class="line">        bitmap_dec = Bitmap.createBitmap(bitmap_src.getWidth(), bitmap_src.getHeight(), Bitmap.Config.ARGB_8888);</span><br><span class="line">        src = <span class="keyword">new</span> Mat();</span><br><span class="line">        dec = <span class="keyword">new</span> Mat();</span><br><span class="line">        Utils.bitmapToMat(bitmap_src, src);</span><br><span class="line">        kernel = <span class="keyword">new</span> Mat(<span class="number">3</span>, <span class="number">3</span>, CvType.CV_16SC1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        kernel.put(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">5</span>, -<span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">        Imgproc.filter2D(src, dec, src.depth(), kernel);</span><br><span class="line">        Utils.matToBitmap(dec, bitmap_dec);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processor</span><span class="params">(<span class="keyword">int</span> progress)</span> </span>&#123;</span><br><span class="line">        kernel.put(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, progress, -<span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">        Imgproc.filter2D(src, dec, src.depth(), kernel);</span><br><span class="line">        Utils.matToBitmap(dec, bitmap_dec);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Bitmap <span class="title">getResult</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> bitmap_dec;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="简单滤镜之高斯模糊"><a href="#简单滤镜之高斯模糊" class="headerlink" title="简单滤镜之高斯模糊"></a>简单滤镜之高斯模糊</h3><p>效果:</p>
+<p><img src="http://miqt.github.io/blogimgs/device-2018-03-27-155048.png" alt="opencv高斯模糊">  </p>
+<p>核心代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//&lt;editor-fold desc=&quot;高斯模糊&quot;&gt;</span></span><br><span class="line">ImageView image_src = (ImageView) findViewById(R.id.image_src);</span><br><span class="line">ImageView image_result = (ImageView) findViewById(R.id.image_result);</span><br><span class="line"></span><br><span class="line">Bitmap src = BitmapFactory.decodeResource(getResources(), R.drawable.image);</span><br><span class="line">Mat mat = <span class="keyword">new</span> Mat(src.getWidth(), src.getHeight(), CvType.CV_8UC4);</span><br><span class="line">Utils.bitmapToMat(src, mat);</span><br><span class="line">Imgproc.blur(mat, mat, <span class="keyword">new</span> Size(<span class="number">30</span>, <span class="number">30</span>));</span><br><span class="line">Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);</span><br><span class="line">Utils.matToBitmap(mat, bitmap);</span><br><span class="line">image_src.setImageBitmap(src);</span><br><span class="line">image_result.setImageBitmap(bitmap);</span><br><span class="line"><span class="comment">//&lt;/editor-fold&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="简单滤镜之腐蚀"><a href="#简单滤镜之腐蚀" class="headerlink" title="简单滤镜之腐蚀"></a>简单滤镜之腐蚀</h3><p>效果:  </p>
+<p><img src="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_fs.png" alt="腐蚀"><img src="https://github.com/miqt/OpenCVLeaning/raw/master/preview/opencv_fs_r.png" alt="腐蚀"></p>
+<p>核心代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 腐蚀运算</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ErodeProcessor</span> <span class="keyword">implements</span> <span class="title">ImgProcessor</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Mat dec;</span><br><span class="line">    <span class="keyword">private</span> Mat src;</span><br><span class="line">    <span class="keyword">private</span> Bitmap bitmap_dec;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Mat kernel;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initProcessor</span><span class="params">(Bitmap bitmap_src)</span> </span>&#123;</span><br><span class="line">        bitmap_dec = Bitmap.createBitmap(bitmap_src.getWidth(), bitmap_src.getHeight(), Bitmap.Config.ARGB_8888);</span><br><span class="line">        src = <span class="keyword">new</span> Mat();</span><br><span class="line">        dec = <span class="keyword">new</span> Mat();</span><br><span class="line">        Utils.bitmapToMat(bitmap_src, src);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        processor(<span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processor</span><span class="params">(<span class="keyword">int</span> wight)</span> </span>&#123;</span><br><span class="line">        kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, <span class="keyword">new</span> Size(wight, wight));</span><br><span class="line">        Imgproc.erode(src, dec, kernel);</span><br><span class="line">        Utils.matToBitmap(dec, bitmap_dec);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Bitmap <span class="title">getResult</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> bitmap_dec;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Demo:<a href="https://github.com/miqt/OpenCVLeaning" target="_blank" rel="noopener">https://github.com/miqt/OpenCVLeaning</a><br>本文出自: <a href="http://imaster.top/" target="_blank" rel="noopener">http://imaster.top</a><br>本文为作者原创,转载请注明出处.  </p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>miqt
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://miqt.github.io/2018/03/23/android-%E7%94%A8opencv%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E5%9B%BE%E5%83%8F%E6%BB%A4%E9%95%9C/" title="android-opencv之线性滤波.实现简单图像滤镜">https://miqt.github.io/2018/03/23/android-用opencv实现简单图像滤镜/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/android/" rel="tag"><i class="fa fa-tag"></i> android</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/03/18/android-opencv%E6%9C%BA%E5%99%A8%E8%A7%86%E8%A7%89%E5%BA%93%E7%9A%84%E9%9B%86%E6%88%90/" rel="prev" title="android-opencv机器视觉库的集成部署">
+      <i class="fa fa-chevron-left"></i> android-opencv机器视觉库的集成部署
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/26/android-View-%E5%92%8C-ViewGroup-%E4%BA%8B%E4%BB%B6%E5%88%86%E5%8F%91%E6%9C%BA%E5%88%B6/" rel="next" title="android View 和 ViewGroup 事件分发机制">
+      android View 和 ViewGroup 事件分发机制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#核是什么"><span class="nav-number">1.</span> <span class="nav-text">核是什么?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何用核实现卷积？"><span class="nav-number">2.</span> <span class="nav-text">如何用核实现卷积？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在android中实现图像滤波"><span class="nav-number">3.</span> <span class="nav-text">在android中实现图像滤波</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单滤镜之自定义核实现自己的线性滤波器"><span class="nav-number">3.1.</span> <span class="nav-text">简单滤镜之自定义核实现自己的线性滤波器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单滤镜之高斯模糊"><span class="nav-number">3.2.</span> <span class="nav-text">简单滤镜之高斯模糊</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单滤镜之腐蚀"><span class="nav-number">3.3.</span> <span class="nav-text">简单滤镜之腐蚀</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="miqt"
+      src="/img/icon.jpg">
+  <p class="site-author-name" itemprop="name">miqt</p>
+  <div class="site-description" itemprop="description">极致而纯粹.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/miqt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;miqt" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:miqingtang@163.com" title="E-Mail → mailto:miqingtang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-miqt"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">miqt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

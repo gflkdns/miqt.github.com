@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon.png">
+  <link rel="mask-icon" href="/img/favicon.png" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"miqt.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="事情的起因还是因为一次面试经历。   面试官：“说一下android的handler机制”    经过几次面试之后发现几乎每个面试官都会问到这个问题，真的都快被问烦了好吧，于是用飞快的速度把之前都快说烂了答案的又说了一遍，好不容易都说完了，这时候面试官的操作来了，直接拿过来几张白纸。 “恩，说的不错，来，那你试试能不能尝试用伪代码实现一下。”       还有这种操作，当时我就蒙了，心想，要不就试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用24k纯java自己实现android的handler+message通信机制">
+<meta property="og:url" content="https://miqt.github.io/2018/09/21/android-handler-message/index.html">
+<meta property="og:site_name" content="miqt&#39;s blog">
+<meta property="og:description" content="事情的起因还是因为一次面试经历。   面试官：“说一下android的handler机制”    经过几次面试之后发现几乎每个面试官都会问到这个问题，真的都快被问烦了好吧，于是用飞快的速度把之前都快说烂了答案的又说了一遍，好不容易都说完了，这时候面试官的操作来了，直接拿过来几张白纸。 “恩，说的不错，来，那你试试能不能尝试用伪代码实现一下。”       还有这种操作，当时我就蒙了，心想，要不就试">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-09-21T09:01:06.000Z">
+<meta property="article:modified_time" content="2020-12-15T11:51:02.475Z">
+<meta property="article:author" content="miqt">
+<meta property="article:tag" content="123123">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://miqt.github.io/2018/09/21/android-handler-message/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>用24k纯java自己实现android的handler+message通信机制 | miqt's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">miqt's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">请保持谦逊｜你会走的更远</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/miqt" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2018/09/21/android-handler-message/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/icon.jpg">
+      <meta itemprop="name" content="miqt">
+      <meta itemprop="description" content="极致而纯粹.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="miqt's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用24k纯java自己实现android的handler+message通信机制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-09-21 17:01:06" itemprop="dateCreated datePublished" datetime="2018-09-21T17:01:06+08:00">2018-09-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-15 19:51:02" itemprop="dateModified" datetime="2020-12-15T19:51:02+08:00">2020-12-15</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>事情的起因还是因为一次面试经历。  </p>
+<p>面试官：“说一下android的handler机制”   </p>
+<p>经过几次面试之后发现几乎每个面试官都会问到这个问题，真的都快被问烦了好吧，于是用飞快的速度把之前都快说烂了答案的又说了一遍，好不容易都说完了，这时候面试官的操作来了，直接拿过来几张白纸。</p>
+<p>“恩，说的不错，来，那你试试能不能尝试用伪代码实现一下。”      </p>
+<p>还有这种操作，当时我就蒙了，心想，要不就试试吧，反正都用了不知道多少次了。   </p>
+<p>一开始写想的思路就是启动一个线程开启一个死循环仿照looper来一直轮训消息队列，然后没有的话就阻塞线程，等消息来了再唤醒继续取出消息处理，但到了postdelay()这个方法时，延时处理就不知道怎么搞了，这把我难住了，因为需要根据时间线来取消息，比如先插入个等待2秒的后插入一个等待1秒的，那么就要时间少的最先运行，想了一会，一时没想出好的方法，然后就下一题了。。。。    </p>
+<p>回来就想，用的熟练跟自己能实现出来还是有差别呀，之前咋就没想过如果自己实现的话会是什么样子呢。    </p>
+<p>回来之后好好翻了翻android的源码，痛定思痛。花了半天，终于按照android的handler机制的思路自己实现了出来。   </p>
+<p>下面就是我的实现过程，比起android官方的肯定要简单点，但主要的线程通讯和延迟处理都实现出来了。   </p>
+<a id="more"></a>
+
+<h2 id="handler-message-机制的由来"><a href="#handler-message-机制的由来" class="headerlink" title="handler message 机制的由来"></a>handler message 机制的由来</h2><p>android 的 UI 操作并不是线程安全的，我们知道，在android中子线程可以有好多个，但是如果每个线程都可以对ui进行访问，我们的界面可能就会变得混乱不堪，这样多个线程操作同一资源就会造成线程安全问题，当然，需要解决线程安全问题的时候，我们第一想到的可能就是加锁，但是加锁会降低运行效率，所以android出于性能的考虑，并没有使用加锁来进行ui操作的控制。</p>
+<p>但问题又回来了，既然想要性能，有想要解决子线程更新ui的需求，那么应该怎么办呢？</p>
+<p>因此android规定，ui线程只能由MainThread进行访问，其他菜鸡子线程想更新ui只能先写报告（handler.sendmessage()）交给MainThread代为处理。</p>
+<p>而这个写报告并由MainThread代为更新UI的过程，就是使用handler message机制来实现的了。</p>
+<p>因此handler message 机制也是对于UI刷新线程安全问题的一个高性能的解决方案，并且这套机制不仅仅适用于主线程和子线程通讯，它适用于任何一对多线程间的通讯。</p>
+<h2 id="主要构成成员"><a href="#主要构成成员" class="headerlink" title="主要构成成员"></a>主要构成成员</h2><ol>
+<li>Handler：消息处理，消息循环从消息队列中取出消息后要对消息进行处理。</li>
+<li>Message：消息的实体</li>
+<li>MessageQueue：消息队列</li>
+<li>Looper：消息循环</li>
+</ol>
+<h2 id="实现代码"><a href="#实现代码" class="headerlink" title="实现代码"></a>实现代码</h2><p><em>Message.java</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.miqt.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">int</span> what;</span><br><span class="line">	<span class="keyword">public</span> Object obj1;</span><br><span class="line">	<span class="keyword">public</span> Object obj2;</span><br><span class="line">	<span class="keyword">public</span> Handler target;</span><br><span class="line">	<span class="keyword">public</span> Runnable callback;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Message</span><span class="params">(<span class="keyword">int</span> what, Object obj1, Object obj2)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.what = what;</span><br><span class="line">		<span class="keyword">this</span>.obj1 = obj1;</span><br><span class="line">		<span class="keyword">this</span>.obj2 = obj2;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Message</span><span class="params">(<span class="keyword">int</span> what)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.what = what;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Message</span><span class="params">(Runnable run)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.callback = run;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>首先就是‘信封’实体message，我这里只实现了message传消息常用的变量，对于android源码中的消息池我没有实现。</p>
+<p><em>MessageQueue.java</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.miqt.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.DelayQueue;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Delayed;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageQueue</span> </span>&#123;</span><br><span class="line">	DelayQueue&lt;DelayRunnable&gt; queue = <span class="keyword">new</span> DelayQueue&lt;DelayRunnable&gt;();</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 入队</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(<span class="keyword">final</span> Message msg, <span class="keyword">long</span> delayInMilliseconds)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (msg.target == <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;handler is null&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		DelayRunnable runn = <span class="keyword">new</span> DelayRunnable() &#123;</span><br><span class="line"></span><br><span class="line">			<span class="meta">@Override</span></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				msg.target.dispatchMessage(msg);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line">		runn.setDelay(delayInMilliseconds);</span><br><span class="line">		queue.add(runn);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 出队</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> DelayRunnable <span class="title">next</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> queue.take();</span><br><span class="line">		&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">			<span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">			e.printStackTrace();</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">DelayRunnable</span> <span class="keyword">implements</span> <span class="title">Delayed</span>, <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">private</span> <span class="keyword">long</span> delay;</span><br><span class="line"></span><br><span class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDelay</span><span class="params">(<span class="keyword">long</span> delayInMilliseconds)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">this</span>.delay = System.nanoTime() + TimeUnit.NANOSECONDS.convert(delayInMilliseconds, TimeUnit.MILLISECONDS);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(Delayed o)</span> </span>&#123;</span><br><span class="line">			DelayRunnable that = (DelayRunnable) o;</span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">this</span>.delay &gt; that.delay) &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>.delay &lt; that.delay) &#123;</span><br><span class="line">				<span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getDelay</span><span class="params">(TimeUnit unit)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">long</span> result = unit.convert(delay - System.nanoTime(), TimeUnit.NANOSECONDS);</span><br><span class="line">			<span class="keyword">return</span> result;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>消息队列只实现了队列的入队和出队，遵循消息先进先出并且需要根据时间优先出队的原则，使用了DelayQueue来储存消息，另外创建DelayRunnable实现了Delayed接口的compareTo方法和getDelay方法，compareTo方法用来比较消息在队列中的顺序，getDelay方法是用来决定是否出队处理，当返回值&lt;=0时，则会出队处理。</p>
+<p><em>Looper.java</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.miqt.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.miqt.test.MessageQueue.DelayRunnable;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Looper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	MessageQueue queue;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Looper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		queue = <span class="keyword">new</span> MessageQueue();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		Looper me = myLooper();</span><br><span class="line">		<span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">			me.queue.next().run();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Looper&gt; sThreadLocal = <span class="keyword">new</span> ThreadLocal&lt;Looper&gt;();</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 检查线程中是否已经有一个Looper循环了</span></span><br><span class="line">		<span class="keyword">if</span> (sThreadLocal.get() != <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;Only one Looper may be created per thread&quot;</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		sThreadLocal.set(<span class="keyword">new</span> Looper());</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Looper <span class="title">myLooper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> sThreadLocal.get();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Looper实现了核心的prepare方法和loop方法，loop开启轮训之后则是开启死循环一直取消息来处理，这里的queue.next(),实际上类似于一个阻塞方法，android源码的实现方式我看是放在了native层中，而java原生不是，java原生的代码它实际上是首先会调用DelayRunnable.getDelay()取得一个纳秒值，然后一直减去系统的时间，直到减到小于0返回DelayRunnable对象，看一眼这块的实现源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">long</span> <span class="title">awaitNanos</span><span class="params">(<span class="keyword">long</span> nanosTimeout)</span></span></span><br><span class="line"><span class="function">                <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (Thread.interrupted())</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">            Node node = addConditionWaiter();</span><br><span class="line">            <span class="keyword">int</span> savedState = fullyRelease(node);</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> deadline = System.nanoTime() + nanosTimeout;</span><br><span class="line">            <span class="keyword">int</span> interruptMode = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (!isOnSyncQueue(node)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (nanosTimeout &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                    transferAfterCancelledWait(node);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (nanosTimeout &gt;= spinForTimeoutThreshold)</span><br><span class="line">                    LockSupport.parkNanos(<span class="keyword">this</span>, nanosTimeout);</span><br><span class="line">                <span class="keyword">if</span> ((interruptMode = checkInterruptWhileWaiting(node)) != <span class="number">0</span>)</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                nanosTimeout = deadline - System.nanoTime();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (acquireQueued(node, savedState) &amp;&amp; interruptMode != THROW_IE)</span><br><span class="line">                interruptMode = REINTERRUPT;</span><br><span class="line">            <span class="keyword">if</span> (node.nextWaiter != <span class="keyword">null</span>)</span><br><span class="line">                unlinkCancelledWaiters();</span><br><span class="line">            <span class="keyword">if</span> (interruptMode != <span class="number">0</span>)</span><br><span class="line">                reportInterruptAfterWait(interruptMode);</span><br><span class="line">            <span class="keyword">return</span> deadline - System.nanoTime();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p><em>Handler.java</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.miqt.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	Looper mLooper;</span><br><span class="line">	MessageQueue mQueue;</span><br><span class="line">	<span class="keyword">private</span> CallBack mCallback;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Handler</span><span class="params">(Looper mLooper, CallBack callBack)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.mLooper = mLooper;</span><br><span class="line">		<span class="keyword">this</span>.mCallback = callBack;</span><br><span class="line">		mQueue = mLooper.queue;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">post</span><span class="params">(Runnable r)</span> </span>&#123;</span><br><span class="line">		Message msg = <span class="keyword">new</span> Message(r);</span><br><span class="line">		<span class="keyword">if</span> (msg.target == <span class="keyword">null</span>) &#123;</span><br><span class="line">			msg.target = <span class="keyword">this</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		mQueue.enqueue(msg, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postDelay</span><span class="params">(Runnable r, <span class="keyword">long</span> delayMillis)</span> </span>&#123;</span><br><span class="line">		Message msg = <span class="keyword">new</span> Message(r);</span><br><span class="line">		<span class="keyword">if</span> (msg.target == <span class="keyword">null</span>) &#123;</span><br><span class="line">			msg.target = <span class="keyword">this</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		mQueue.enqueue(msg, delayMillis);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (msg.target == <span class="keyword">null</span>) &#123;</span><br><span class="line">			msg.target = <span class="keyword">this</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		mQueue.enqueue(msg, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message message)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handleCallback</span><span class="params">(Message message)</span> </span>&#123;</span><br><span class="line">		message.callback.run();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dispatchMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (msg.callback != <span class="keyword">null</span>) &#123;</span><br><span class="line">			handleCallback(msg);</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (mCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">if</span> (mCallback.handleMessage(msg)) &#123;</span><br><span class="line">					<span class="keyword">return</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			handleMessage(msg);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">interface</span> <span class="title">CallBack</span> </span>&#123;</span><br><span class="line">		<span class="function"><span class="keyword">boolean</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span></span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后就是handler了，它其实是最简单的，只负责调用之前封装好的就行了，我在这里按照android分发message的逻辑实现了dispatchMessage，这样的话调用起来几乎跟在android上一模一样，优先级也一样，先出发message里面的runnable运行,然后触发CallBack对象的handleMessage，如果返回false的话那么还会触发自己的方法public void handleMessage(Message message)。    </p>
+<p>到了这里就实现完成了，接下来就是测试一下是否可用。    </p>
+<p>这是我的测试代码。    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.miqt.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.DelayQueue;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Acty</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">protected</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HELLO = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">protected</span> <span class="keyword">static</span> Handler handler;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">new</span> Thread() &#123;</span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				Looper.prepare();</span><br><span class="line">				handler = <span class="keyword">new</span> Handler(Looper.myLooper(), <span class="keyword">new</span> MyCallBack());</span><br><span class="line">				Looper.loop();</span><br><span class="line">			&#125;;</span><br><span class="line">		&#125;.start();</span><br><span class="line">		<span class="comment">// 创建线程不定时发送message</span></span><br><span class="line">		test();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">new</span> Thread() &#123;</span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">for</span> (;;) &#123;</span><br><span class="line">					<span class="keyword">try</span> &#123;</span><br><span class="line">						TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">					&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">						<span class="comment">// TODO Auto-generated catch block</span></span><br><span class="line">						e.printStackTrace();</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">int</span> type = (<span class="keyword">int</span>) (Math.random() * <span class="number">3</span>);</span><br><span class="line">					<span class="keyword">switch</span> (type) &#123;</span><br><span class="line">					<span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">						System.out.println(<span class="string">&quot;[发送方]：sendMessage&quot;</span>);</span><br><span class="line">						Message message = <span class="keyword">new</span> Message(HELLO);</span><br><span class="line">						message.obj1 = <span class="string">&quot;001&quot;</span> + Math.random();</span><br><span class="line">						handler.sendMessage(message);</span><br><span class="line">						<span class="keyword">break</span>;</span><br><span class="line">					<span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">						System.out.println(<span class="string">&quot;[发送方]：post&quot;</span>);</span><br><span class="line">						handler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line"></span><br><span class="line">							<span class="meta">@Override</span></span><br><span class="line">							<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">								System.out.println(<span class="string">&quot;[接受方]post&quot;</span>);</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;);</span><br><span class="line">						<span class="keyword">break</span>;</span><br><span class="line">					<span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">						<span class="keyword">long</span> delaytime = (<span class="keyword">long</span>) (Math.random() * <span class="number">5000</span>);</span><br><span class="line">						System.out.println(<span class="string">&quot;[发送方]：postDelay:&quot;</span> + String.valueOf(delaytime));</span><br><span class="line">						handler.postDelay(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line"></span><br><span class="line">							<span class="meta">@Override</span></span><br><span class="line">							<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">								System.out.println(<span class="string">&quot;[接受方]postDelay&quot;</span> + delaytime);</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;, delaytime);</span><br><span class="line">						<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">					<span class="keyword">default</span>:</span><br><span class="line">						<span class="keyword">break</span>;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;;</span><br><span class="line">		&#125;.start();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyCallBack</span> <span class="keyword">implements</span> <span class="title">Handler</span>.<span class="title">CallBack</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">switch</span> (msg.what) &#123;</span><br><span class="line">			<span class="keyword">case</span> HELLO:</span><br><span class="line">				String str = (String) msg.obj1;</span><br><span class="line">				System.out.println(<span class="string">&quot;[接受方]&quot;</span> + str + <span class="string">&quot;开始处理&quot;</span>);</span><br><span class="line">				System.out.println(<span class="string">&quot;[接受方]&quot;</span> + <span class="string">&quot;hello,我来自消息队列&quot;</span>);</span><br><span class="line">				System.out.println(<span class="string">&quot;[接受方]&quot;</span> + str + <span class="string">&quot;处理完成，出队&quot;</span>);</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">default</span>:</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>开启了两个线程，一个线程作为接收处理消息的线程，一个线程负责随机一个时间并且用不同的方式来发送消息。     </p>
+<p>测试结果：   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">[发送方]：sendMessage</span><br><span class="line">[接受方]0010.5516496029786089开始处理</span><br><span class="line">[接受方]hello,我来自消息队列</span><br><span class="line">[接受方]0010.5516496029786089处理完成，出队</span><br><span class="line">[发送方]：post</span><br><span class="line">[接受方]post</span><br><span class="line">[发送方]：post</span><br><span class="line">[接受方]post</span><br><span class="line">[发送方]：sendMessage</span><br><span class="line">[接受方]0010.45668723454926696开始处理</span><br><span class="line">[接受方]hello,我来自消息队列</span><br><span class="line">[接受方]0010.45668723454926696处理完成，出队</span><br><span class="line">[发送方]：post</span><br><span class="line">[接受方]post</span><br><span class="line">[发送方]：sendMessage</span><br><span class="line">[接受方]0010.43970565205942336开始处理</span><br><span class="line">[接受方]hello,我来自消息队列</span><br><span class="line">[接受方]0010.43970565205942336处理完成，出队</span><br><span class="line">[发送方]：postDelay:3647</span><br><span class="line">[发送方]：postDelay:4144</span><br><span class="line">[发送方]：postDelay:497</span><br><span class="line">[接受方]postDelay497</span><br><span class="line">[发送方]：sendMessage</span><br><span class="line">[接受方]0010.4489768565868292开始处理</span><br><span class="line">[接受方]hello,我来自消息队列</span><br><span class="line">[接受方]0010.4489768565868292处理完成，出队</span><br><span class="line">[接受方]postDelay3647</span><br><span class="line">[发送方]：post</span><br><span class="line">[接受方]post</span><br><span class="line">[发送方]：sendMessage</span><br><span class="line">[接受方]0010.5013814373539061开始处理</span><br><span class="line">[接受方]hello,我来自消息队列</span><br><span class="line">[接受方]0010.5013814373539061处理完成，出队</span><br><span class="line">[接受方]postDelay4144</span><br><span class="line">[发送方]：postDelay:4358</span><br></pre></td></tr></table></figure>
+
+
+<p>可以看到不管是sendMessage、post还是postDelay,Handler都有条不紊的按照顺序进行处理，并且postDelay发出的消息会按照正确的顺序和时间点来运行。      </p>
+<p>通过这次的实现，感觉对android消息机制有了更深的了解，以后还是要多思考多学习呀。    </p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>miqt
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://miqt.github.io/2018/09/21/android-handler-message/" title="用24k纯java自己实现android的handler+message通信机制">https://miqt.github.io/2018/09/21/android-handler-message/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/08/01/mvp-hot-fix/" rel="prev" title="android基于mvp的热修复方案构思，不使用第三方">
+      <i class="fa fa-chevron-left"></i> android基于mvp的热修复方案构思，不使用第三方
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/10/16/Android%E4%B8%AD%E7%9A%84%E4%B8%BB%E7%BA%BF%E7%A8%8B%E9%97%AE%E4%BB%80%E4%B9%88%E4%B8%8D%E4%BC%9A%E5%9B%A0%E4%B8%BALooper-loop-%E9%87%8C%E9%9D%A2%E7%9A%84%E6%AD%BB%E5%BE%AA%E7%8E%AF%E5%8D%A1%E6%AD%BB%EF%BC%9F/" rel="next" title="android的主线程为什么不会因为Looper.loop()里面的死循环卡死？">
+      android的主线程为什么不会因为Looper.loop()里面的死循环卡死？ <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#handler-message-机制的由来"><span class="nav-number">1.</span> <span class="nav-text">handler message 机制的由来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主要构成成员"><span class="nav-number">2.</span> <span class="nav-text">主要构成成员</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现代码"><span class="nav-number">3.</span> <span class="nav-text">实现代码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="miqt"
+      src="/img/icon.jpg">
+  <p class="site-author-name" itemprop="name">miqt</p>
+  <div class="site-description" itemprop="description">极致而纯粹.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/miqt" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;miqt" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:miqingtang@163.com" title="E-Mail → mailto:miqingtang@163.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-miqt"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">miqt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
