@@ -184,6 +184,86 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2019/09/29/SDK%E7%83%AD%E4%BF%AE%E5%A4%8D%E8%B0%83%E7%A0%94%E7%BB%93%E6%9E%9C%E5%8F%8A%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/icon.jpg">
+      <meta itemprop="name" content="miqt">
+      <meta itemprop="description" content="极致而纯粹.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="miqt's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/09/29/SDK%E7%83%AD%E4%BF%AE%E5%A4%8D%E8%B0%83%E7%A0%94%E7%BB%93%E6%9E%9C%E5%8F%8A%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">SDK热修复调研结果及实现</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-29 12:37:20" itemprop="dateCreated datePublished" datetime="2019-09-29T12:37:20+08:00">2019-09-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-12-15 19:51:02" itemprop="dateModified" datetime="2020-12-15T19:51:02+08:00">2020-12-15</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>对SDK实现热修复,在客户出问题或者面临新版本Android兼容性问题的时候,我们可以在用户不用动任何代码的情况下,实现对代码的更改,因此如果能实现一个稳定可用的热修复,同时对目前的项目影响不大的情况下,是非常有利的.</p>
+<h2 id="需求梳理"><a href="#需求梳理" class="headerlink" title="需求梳理"></a>需求梳理</h2><p>下面是我通过对SDK的了解,梳理的一个需求,这个需求可能还比较片面,后续可以继续补充.  </p>
+<p>热修复在实现以后,应该做到如下保证:</p>
+<ol>
+<li>保证原来的代码逻辑完全不变,并正常运行.</li>
+<li>保证客户的对接方式,跟目前一致.</li>
+<li>保证旧客户接入的SDK仍然可用,即,向后兼容</li>
+<li>客户是需要知情SDK热修复能力的,因此对不信任热修复的客户,可以支持非热修复版本,并且,非热修复版本和有热修复版本调用方式,逻辑,都是一致的,代码也是重用的.</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2019/09/29/SDK%E7%83%AD%E4%BF%AE%E5%A4%8D%E8%B0%83%E7%A0%94%E7%BB%93%E6%9E%9C%E5%8F%8A%E5%AE%9E%E7%8E%B0/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2019/09/07/Android%E5%A4%9A%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5%E8%87%AA%E5%AE%9A%E4%B9%89SharedPreferences%E5%AE%9E%E7%8E%B0%E7%9B%B8%E5%85%B3%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -875,85 +955,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://miqt.github.io/2018/06/11/2018%E9%9D%A2%E7%BB%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/icon.jpg">
-      <meta itemprop="name" content="miqt">
-      <meta itemprop="description" content="极致而纯粹.">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="miqt's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/06/11/2018%E9%9D%A2%E7%BB%8F/" class="post-title-link" itemprop="url">2018面经</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-06-11 16:32:58" itemprop="dateCreated datePublished" datetime="2018-06-11T16:32:58+08:00">2018-06-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-15 19:51:02" itemprop="dateModified" datetime="2020-12-15T19:51:02+08:00">2020-12-15</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>从毕业之后一直在那里工作了将尽3年的公司，好好的突然就老总开员工大会告知公司资金出问题，大家都散了吧，可以说是始料未及啊。  </p>
-<p>无奈，4月份，又要开始出来找工作了，在写这篇博客之前找到工作了，还算满意吧。下面就是对本次面试经历中印象比较深的几个问题做一个总结。  </p>
-<h3 id="今日头条"><a href="#今日头条" class="headerlink" title="今日头条"></a>今日头条</h3><p>4月初投的简历吧，直到四月底今日头条打电话来让过去面试，hr提前提醒了面试会有算法方面的东西，预留了3天的时间让好好准备准备，只来得及复习了一下以前看过的算法题，心里还是有点紧张的。</p>
-<p>印象深刻的几个问题：</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2018/06/11/2018%E9%9D%A2%E7%BB%8F/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1021,7 +1026,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">60</span>
+          <span class="site-state-item-count">61</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
