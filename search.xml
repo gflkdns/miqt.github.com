@@ -1743,6 +1743,8 @@
 <p>显示所有的activities的信息,包括任务栈等:</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">adb shell dumpsys activity</span><br></pre></td></tr></table></figure>
 
+<a id="more"></a>
+
 <p>查看Android应用包名package和入口activity名称 ：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">aapt dump badging E:\apk\es3.apk</span><br></pre></td></tr></table></figure>
 
