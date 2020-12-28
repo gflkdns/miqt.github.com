@@ -236,9 +236,9 @@
 <p>或许到这里我们会认为原来这是硬件的原因，没法解决，然而事情并没有这么愉快的结束o(￣ヘ￣o#)</p>
 <p>当我在一些不支持的设备上下载完Google Chrome尝试着他是不是能打开的时候，答案是，它打开了，也就是说，原因并不能全部归咎于硬件，这与Android自带的浏览器的内核也是有关系的。</p>
 <p>于是在网上开始找解决方法，找到了两种解决方法：</p>
-<p>A.通过crosswalk,添加配置项xwalk –ignore-gpu-blacklist实现<br>crosswalk官网网站：<a href="https://crosswalk-project.org/" target="_blank" rel="noopener">https://crosswalk-project.org/</a><br>配置见Canvas and WebGL support，网址：<a href="https://crosswalk-project.org/documentation/about/faq.html%EF%BC%8C%E7%84%B6%E8%80%8C%E7%9C%8B%E4%BA%86%E4%B8%80%E4%BC%9A%E8%BF%98%E6%98%AF%E6%87%B5%E4%BA%86%E3%80%82%E8%80%8C%E4%B8%94%E6%88%91%E6%8C%89%E7%85%A7%E5%AE%83%E8%AF%B4%E7%9A%84%E9%85%8D%E7%BD%AE%E5%A5%BD%E6%89%93%E5%AE%8C%E5%8C%85%E5%8F%91%E7%8E%B0APK%E7%AB%9F%E5%A4%9A%E4%BA%8640%E5%A4%9AM%E3%80%82" target="_blank" rel="noopener">https://crosswalk-project.org/documentation/about/faq.html，然而看了一会还是懵了。而且我按照它说的配置好打完包发现APK竟多了40多M。</a></p>
-<p>B.TBS（腾讯浏览服务）X5内核，网址：<a href="http://x5.tencent.com/%EF%BC%8C%E7%9C%8B%E5%88%B0%E4%B9%8B%E5%90%8E%E5%BD%93%E5%9C%BA%E5%85%88%E6%8A%8ADemo%E4%B8%8B%E4%B8%8B%E6%9D%A5%E8%AF%95%E4%B8%80%E4%B8%8B%EF%BC%8C%E6%9E%9C%E7%84%B6%E5%8F%AF%E4%BB%A5%E3%80%82%E6%84%9F%E8%B0%A2%E8%85%BE%E8%AE%AFX5%E5%86%85%E6%A0%B8%E8%AE%A9%E6%88%91%E5%BA%A6%E8%BF%87%E4%BA%86%E8%BF%99%E4%B8%AA%E9%9A%BE%E5%85%B3%E3%80%82" target="_blank" rel="noopener">http://x5.tencent.com/，看到之后当场先把Demo下下来试一下，果然可以。感谢腾讯X5内核让我度过了这个难关。</a><br>另外下一篇博客会介绍怎么在Android Studio中使用X5浏览器SDK，并且让一个第三方库可以直接在.\app\build.gradle中以</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span> <span class="string">&#x27;URL&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>A.通过crosswalk,添加配置项xwalk –ignore-gpu-blacklist实现<br>crosswalk官网网站：<a href="https://crosswalk-project.org/" target="_blank" rel="noopener">https://crosswalk-project.org/</a><br>配置见Canvas and WebGL support，网址：<a href="https://crosswalk-project.org/documentation/about/faq.html，然而看了一会还是懵了。而且我按照它说的配置好打完包发现APK竟多了40多M。" target="_blank" rel="noopener">https://crosswalk-project.org/documentation/about/faq.html，然而看了一会还是懵了。而且我按照它说的配置好打完包发现APK竟多了40多M。</a></p>
+<p>B.TBS（腾讯浏览服务）X5内核，网址：<a href="http://x5.tencent.com/，看到之后当场先把Demo下下来试一下，果然可以。感谢腾讯X5内核让我度过了这个难关。" target="_blank" rel="noopener">http://x5.tencent.com/，看到之后当场先把Demo下下来试一下，果然可以。感谢腾讯X5内核让我度过了这个难关。</a><br>另外下一篇博客会介绍怎么在Android Studio中使用X5浏览器SDK，并且让一个第三方库可以直接在.\app\build.gradle中以</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span> <span class="string">'URL'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>的方式使用的方法，地址：<a href="http://blog.csdn.net/qq_27512671/article/details/53056882" target="_blank" rel="noopener">http://blog.csdn.net/qq_27512671/article/details/53056882</a></p>
 
@@ -462,5 +462,5 @@
 
   
 
-</body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"left","width":160,"height":380,"hOffset":50,"vOffset":-50},"mobile":{"show":true,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
 </html>

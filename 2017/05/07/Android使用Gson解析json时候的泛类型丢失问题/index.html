@@ -232,7 +232,7 @@
 
       
         <p>原来的会丢失的错误代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RootEntity&lt;List&lt;TagData&gt;&gt; entity;</span><br><span class="line">              entity = <span class="keyword">new</span> Gson().fromJson(result, RootEntity.class);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RootEntity&lt;List&lt;TagData&gt;&gt; entity;</span><br><span class="line">              entity = <span class="keyword">new</span> Gson().fromJson(result, RootEntity<span class="class">.<span class="keyword">class</span>)</span>;</span><br></pre></td></tr></table></figure>
 <a id="more"></a>
 <p>改正为：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RootEntity&lt;List&lt;TagData&gt;&gt; entity;</span><br><span class="line">            entity = <span class="keyword">new</span> Gson().fromJson(result, <span class="keyword">new</span> TypeToken&lt;RootEntity&lt;List&lt;TagData&gt;&gt;&gt;() &#123;</span><br><span class="line">            &#125;.getType());</span><br></pre></td></tr></table></figure>
@@ -457,5 +457,5 @@
 
   
 
-</body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"left","width":160,"height":380,"hOffset":50,"vOffset":-50},"mobile":{"show":true,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
 </html>

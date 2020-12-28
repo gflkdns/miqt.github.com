@@ -234,7 +234,7 @@
         <p>今天遇到了一个奇怪的问题，本来在Android  studio 1.4上运行的好好的程序，到了我更新完的Android  studio  2.1上就打包失败了，但是用调试机直接运行则没问题。</p>
 <a id="more"></a>
 <p>最后在app下的build.gradle下加入了这样的一段代码就通过了：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">lintOptions &#123;</span><br><span class="line">     abortOnError <span class="keyword">false</span></span><br><span class="line">     checkReleaseBuilds <span class="keyword">false</span></span><br><span class="line">     <span class="comment">// 防止在发布的时候出现因MissingTranslation导致Build Failed!</span></span><br><span class="line">     disable <span class="string">&#x27;MissingTranslation&#x27;</span></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">lintOptions &#123;</span><br><span class="line">     abortOnError <span class="keyword">false</span></span><br><span class="line">     checkReleaseBuilds <span class="keyword">false</span></span><br><span class="line">     <span class="comment">// 防止在发布的时候出现因MissingTranslation导致Build Failed!</span></span><br><span class="line">     disable <span class="string">'MissingTranslation'</span></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 
 <p>原因好像是项目在打包的时候进行检查，而我们的项目如果存在不适当地操作的时候就无法通过，当然也就打包失败了，而这样的解决方法就是忽略掉这些检查。</p>
 
@@ -458,5 +458,5 @@
 
   
 
-</body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"left","width":160,"height":380,"hOffset":50,"vOffset":-50},"mobile":{"show":true,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.8},"log":false});</script></body>
 </html>
