@@ -22,21 +22,21 @@
 
   <meta name="description" content="以前开发Android字节码插件都是盲目调试，特别麻烦，今天看ByteX开源群里相关讨论，这里记录下。 从 ByteX 看来的方法。大家也可以去源地址看。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android 插件Debug（断点调试）方法记录">
+<meta property="og:title" content="Android 插件Debug方法">
 <meta property="og:url" content="https://miqt.github.io/2020/12/29/plugin-debug/index.html">
 <meta property="og:site_name" content="miqt&#39;s blog">
 <meta property="og:description" content="以前开发Android字节码插件都是盲目调试，特别麻烦，今天看ByteX开源群里相关讨论，这里记录下。 从 ByteX 看来的方法。大家也可以去源地址看。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://miqt.github.io/2020/12/29/plugin-debug/%5Cblogimgs%5CAS_edit_configuration.png">
-<meta property="og:image" content="https://miqt.github.io/2020/12/29/plugin-debug/%5Cblogimgs%5CAS_remote_debug.png">
-<meta property="og:image" content="https://miqt.github.io/2020/12/29/plugin-debug/%5Cblogimgs%5CAS_debug_button.png">
-<meta property="og:image" content="https://miqt.github.io/2020/12/29/plugin-debug/%5Cblogimgs%5Cplugin_debug_result.png">
+<meta property="og:image" content="https://miqt.github.io/blogimgs/AS_edit_configuration.png">
+<meta property="og:image" content="https://miqt.github.io/blogimgs/AS_remote_debug.png">
+<meta property="og:image" content="https://miqt.github.io/blogimgs/AS_debug_button.png">
+<meta property="og:image" content="https://miqt.github.io/blogimgs/plugin_debug_result.png">
 <meta property="article:published_time" content="2020-12-29T07:13:09.000Z">
-<meta property="article:modified_time" content="2020-12-29T08:01:53.258Z">
+<meta property="article:modified_time" content="2020-12-29T08:08:56.864Z">
 <meta property="article:author" content="miqt">
 <meta property="article:tag" content="android">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://miqt.github.io/2020/12/29/plugin-debug/%5Cblogimgs%5CAS_edit_configuration.png">
+<meta name="twitter:image" content="https://miqt.github.io/blogimgs/AS_edit_configuration.png">
 
 <link rel="canonical" href="https://miqt.github.io/2020/12/29/plugin-debug/">
 
@@ -51,7 +51,7 @@
   };
 </script>
 
-  <title>Android 插件Debug（断点调试）方法记录 | miqt's blog</title>
+  <title>Android 插件Debug方法 | miqt's blog</title>
   
 
 
@@ -203,7 +203,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Android 插件Debug（断点调试）方法记录
+          Android 插件Debug方法
         </h1>
 
         <div class="post-meta">
@@ -214,7 +214,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-12-29 15:13:09 / 修改时间：16:01:53" itemprop="dateCreated datePublished" datetime="2020-12-29T15:13:09+08:00">2020-12-29</time>
+              <time title="创建时间：2020-12-29 15:13:09 / 修改时间：16:08:56" itemprop="dateCreated datePublished" datetime="2020-12-29T15:13:09+08:00">2020-12-29</time>
             </span>
 
           
@@ -234,24 +234,19 @@
 
 <p>插件调试步骤：</p>
 <ol>
-<li>在AndroidStudio新建run configuration.</li>
+<li>在AndroidStudio新建run configuration.<br><img src="/blogimgs/AS_edit_configuration.png" alt="source/blogimgs/AS_edit_configuration.png"><br><img src="/blogimgs/AS_remote_debug.png" alt="source/blogimgs/AS_remote_debug.png"></li>
 </ol>
-<p><img src="%5Cblogimgs%5CAS_edit_configuration.png" alt="\blogimgs\AS_edit_configuration.png"></p>
-<p><img src="%5Cblogimgs%5CAS_remote_debug.png" alt="\blogimgs\AS_remote_debug.png"></p>
 <ol start="2">
 <li><p>把插件本地发布然后接入到app工程里之后,在命令行执行构建命令,末尾拼上这一串参数,比如：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;gradlew clean :example:assembleDouyinCnRelease -Dorg.gradle.debug&#x3D;true --no-daemon</span><br></pre></td></tr></table></figure>
 <p>我这里是在app模块中接入的，我使用的以下命令：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradlew clean :app:assemble -Dorg.gradle.debug&#x3D;true --no-daemon</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>马上切换到刚刚创建的Configuration,点击debug按钮.</p>
+<li><p>马上切换到刚刚创建的Configuration,点击debug按钮.<br><img src="/blogimgs/AS_debug_button.png" alt="source/blogimgs/AS_debug_button.png"></p>
+</li>
+<li><p>成功进入插件Debug<br><img src="/blogimgs/plugin_debug_result.png" alt="source/blogimgs/plugin_debug_result.png"></p>
 </li>
 </ol>
-<p><img src="%5Cblogimgs%5CAS_debug_button.png" alt="\blogimgs\AS_debug_button.png"></p>
-<ol start="4">
-<li>成功进入插件Debug</li>
-</ol>
-<p><img src="%5Cblogimgs%5Cplugin_debug_result.png" alt="\blogimgs\plugin_debug_result.png"></p>
 
     </div>
 
@@ -267,7 +262,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://miqt.github.io/2020/12/29/plugin-debug/" title="Android 插件Debug（断点调试）方法记录">https://miqt.github.io/2020/12/29/plugin-debug/</a>
+    <a href="https://miqt.github.io/2020/12/29/plugin-debug/" title="Android 插件Debug方法">https://miqt.github.io/2020/12/29/plugin-debug/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
